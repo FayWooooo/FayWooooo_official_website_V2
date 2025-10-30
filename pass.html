@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FayWooooo 官方網站</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo"><i class="fa-solid fa-ticket"></i> FayPass</div>
+    <nav class="navbar">
+      <a href="index.html"><i class="fa-solid fa-house"></i> 首頁</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2><i class="fa-solid fa-medal"></i> 通行券進度</h2>
+    <div style="background:#333;width:80%;height:20px;border-radius:10px;margin:20px auto;">
+      <div id="progress" style="background:gold;height:100%;width:0%;border-radius:10px;"></div>
+    </div>
+    <p id="progressText"></p>
+  </main>
+
+  <footer>© FayWooooo</footer>
+
+  <script>
+  fetch("https://ugasavvuxllkpkkdxvpv.supabase.co/functions/v1/pass")
+    .then(r => r.json())
+    .then(data => {
+      const p = data[0]?.progress || 0;
+      document.getElementById("progress").style.width = p + "%";
+      document.getElementById("progressText").innerHTML = `<i class="fa-solid fa-chart-line"></i> 目前進度：${p}%`;
+    });
+  </script>
+</body>
+</html>

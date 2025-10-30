@@ -1,0 +1,320 @@
+/* ================================================
+   🌈 FayWooooo 全站統一風格 (Wallet風玻璃介面)
+   ================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+
+body {
+  font-family: "Noto Sans TC", sans-serif;
+  margin: 0;
+  padding: 0;
+  color: white;
+  text-align: center;
+  background: rgb(255, 255, 255);
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding-top: 80px;
+}
+::selection {
+  background: rgba(4, 255, 0, 0.236)
+}
+main{
+  background: radial-gradient(ellipse at bottom, #0a1a2f 0%, #000814 100%);
+  padding: 50px;
+}
+.title{
+  font-size: 75px;
+  color: #34ff85c6;
+  text-shadow:
+    0 0 10px #34ff85c6,
+    0 0 20px #34ff85c0,
+    0 0 40px #34ff85b4,
+    0 0 80px #34ff85a8;
+  animation: glow 2s ease-in-out infinite, hue 5s linear infinite;
+  background: #34ff85c6;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: #0a1a2f; /* 文字的填充色 */
+  color: transparent;
+}
+/* ===== 🔹 全站背景動態光點 ===== */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 215, 0, 0.05), transparent 60%),
+              radial-gradient(circle at 70% 80%, rgba(0, 140, 255, 0.05), transparent 60%);
+  z-index: -1;
+  animation: moveGlow 25s linear infinite alternate;
+}
+@keyframes moveGlow {
+  from { background-position: 0% 0%, 100% 100%; }
+  to { background-position: 100% 50%, 0% 50%; }
+}
+
+/* ===== 🔹 頂部導覽列 ===== */
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+  background:white;
+  color: #000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 25px;
+  z-index: 100;
+}
+
+.logo {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #000000;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.navbar {
+  display: flex;
+  gap: 16px;
+}
+.navbar a {
+  text-decoration: none;
+  color: rgb(0, 0, 0);
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 10px;
+  transition: 0.2s;
+}
+.navbar a:hover {
+  background: rgb(255, 250, 203);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  color: #000814;
+}
+
+/* ===== 🔹 主內容容器 ===== */
+.container{
+  width: 90%;
+  max-width: 1000px;
+  margin: 100px auto 60px;
+}
+.container2{
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+/* ===== 🔹 卡片樣式 (任務 / 兌換 / 公告通用) ===== */
+.card {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  padding: 25px;
+  margin-bottom: 20px;
+  text-align: left;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  transition: 0.3s;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+}
+.card h3 {
+  margin-top: 0;
+  color: gold;
+}
+.card p {
+  color: #ddd;
+  line-height: 1.6;
+}
+.card2 {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  padding: 25px;
+  margin-bottom: 20px;
+  text-align: left;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  transition: 0.3s;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.card2 h3 {
+  margin-top: 0;
+  color: gold;
+}
+.card2 p {
+  color: #ddd;
+  line-height: 1.6;
+}
+/* ===== 🔹 主標題動畫 ===== */
+h1, h2 {
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+  letter-spacing: 1px;
+}
+
+/* ===== 🔹 按鈕樣式 ===== */
+.btn, .main-btn {
+  background:white;
+  border: none;
+  border-radius: 12px;
+  color: black;
+  font-weight: bold;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: 0.25s;
+  font-size: 1rem;
+}
+.btn:hover, .main-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px gold;
+}
+
+/* ===== 🔹 兌換卡片 (Rewards Page) ===== */
+.reward-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  padding: 18px 25px;
+  margin-bottom: 18px;
+  width: 100%;
+  max-width: 600px;
+  margin: auto;
+  transition: 0.3s;
+  margin-bottom: 25px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.reward-card:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-3px);
+}
+.reward-info {
+  text-align: left;
+}
+.reward-title {
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+.reward-desc {
+  color: #ccc;
+  font-size: 0.95rem;
+}
+.reward-price {
+  color: gold;
+  font-weight: 700;
+}
+
+/* ===== 🔹 使用者資訊區 ===== */
+#userArea {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+#avatarBtn, .avatar-btn {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid rgba(255,255,255,0.2);
+  transition: 0.2s;
+}
+#avatarBtn:hover { transform: scale(1.08); }
+
+/* ===== 🔹 Profile 彈出選單 ===== */
+.profile-menu {
+  position: fixed;
+  top: 80px;
+  right: 25px;
+  background: rgba(20, 20, 20, 0.95);
+  border-radius: 15px;
+  padding: 15px;
+  width: 240px;
+  color: white;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(20px);
+  transition: 0.3s;
+}
+.profile-menu.hidden {
+  display: none;
+}
+.profile-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.profile-menu .menu-buttons button {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  background:white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.profile-menu .logout {
+  background: crimson;
+  color: rgb(0, 0, 0);
+}
+
+/* ===== 🔹 頁尾 ===== */
+footer {
+  margin-top: 50px;
+  color: #aaa;
+  font-size: 0.9rem;
+  padding-bottom: 25px;
+}
+
+/* ===== 🔹 Scrollbar 美化 ===== */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(196, 196, 196);
+  border-radius: 4px;
+}::-webkit-scrollbar-thumb:hover {
+  background: rgb(165, 165, 165);
+}
+.reward-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.buy-btn {
+  background: gold;
+  color: black;
+  border: none;
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.buy-btn:hover {
+  background: #ffda55;
+  transform: scale(1.05);
+}
+#coinDisplay {
+  color: rgb(0, 0, 0);
+  font-weight: bold;
+  font-size: 1rem;
+  margin-right: 20px;
+  display: flex;
+  align-items: center;
+}

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FayWooooo 官方網站</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+</head>
+<body>
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="logo"><i class="fa-solid fa-shield"></i> FayWooooo 管理後台</div>
+    <nav class="navbar">
+      <a href="index.html"><i class="fa-solid fa-house"></i> 返回前台</a>
+    </nav>
+  </header>
+  <h1 style="font-size: 35px;color: red;">需有管理員權限才能使用後台!</h1>
+  <main id="adminContent" style="display:none;">
+
+    <section id="accessDenied" style="display:none; color:red; text-align:center;">
+        🚫 無權限存取
+      </section>
+      
+      <section id="adminPanel" class="hidden">
+        <h1 class="hero-title"><i class="fa-solid fa-gear"></i> 後台管理系統</h1>
+      
+        <!-- Fay幣管理 -->
+        <div class="card">
+          <h2><i class="fa-solid fa-coins"></i> Fay幣管理</h2>
+          <input type="email" id="targetEmail" placeholder="輸入玩家 Email">
+          <input type="number" id="coinAmount" placeholder="金額 (增加/減少用)">
+          <div style="margin-top:10px;">
+            <button id="addCoin" class="main-btn">增加 Fay幣</button>
+            <button id="reduceCoin" class="main-btn">減少 Fay幣</button>
+            <button id="resetCoin" class="main-btn" style="background:crimson;color:white;">歸零 Fay幣</button>
+          </div>
+        </div>
+      
+        <!-- 公告管理 -->
+        <div class="card">
+          <h2><i class="fa-solid fa-bullhorn"></i> 公告管理</h2>
+          <textarea id="newsContent" placeholder="輸入公告內容..."></textarea>
+          <button id="publishNews" class="main-btn" style="margin-top:10px;">發布公告</button>
+        </div>
+        <!-- 獎勵管理 -->
+<div class="card">
+  <h2><i class="fa-solid fa-trophy"></i> 新增獎勵</h2>
+  <input type="text" id="rewardTitle" placeholder="獎勵名稱">
+  <input type="text" id="rewardDesc" placeholder="獎勵簡介">
+  <input type="number" id="rewardPrice" placeholder="價格（Fay幣）">
+  <button id="addReward" class="main-btn" style="margin-top:10px;">
+    新增獎勵
+  </button>
+</div>
+<div class="card">
+  <h2><i class="fa-solid fa-bell"></i> 系統通知</h2>
+  <div id="notificationList">載入中...</div>
+  <button id="refreshNotifications" class="main-btn" style="margin-top:10px;">
+    重新載入
+  </button>
+</div>
+
+      </section>
+      
+  </main>
+
+  <script type="module" src="js/supabase-config.js"></script>
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FayWooooo 官方網站</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+</head>
+<body>
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="logo"><i class="fa-solid fa-star"></i> FayWooooo 官方網站 v2.0</div>
+    <nav class="navbar" id="navBar">
+      <a href="/missions"><i class="fa-solid fa-list-check"></i> 任務</a>
+      <a href="/shop"><i class="fa-solid fa-gift"></i> 兌換</a>
+      <a href="/pass"><i class="fa-solid fa-ticket"></i> 通行券</a>
+    </nav>
+    <div id="userArea">
+      <button id="loginBtn" class="main-btn"><i class="fa-brands fa-google"></i> 使用 Google 登入</button>
+    </div>
+  </header>
+
+  <main>
+    <h1 class="title">歡迎來到<br>FayWooooo官網</h1>
+    <p>登入後可完成任務、開寶箱、升級通行券！</p>
+
+    <section id="newsSection">
+      <h2><i class="fa-solid fa-bullhorn"></i> 最新公告</h2>
+      <div id="newsList" class="news-list">載入中...</div>
+    </section>
+  </main>
+
+  <footer>
+    © 2025 FayWooooo Official Website
+  </footer>
+
+  <div id="profileMenu" class="profile-menu hidden">
+    <div class="profile-info">
+      <img id="userAvatar" src="" style="border-radius: 50%;" alt="avatar" />
+      <span id="userName"></span>
+    </div>
+    <a href="/shop" style="color: white;text-decoration: none;"><p>Fay幣餘額：<span id="userCoins">--</span></p></a>
+    <div class="menu-buttons">
+      <button id="logoutBtn" class="logout">登出</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/supabase-config.js"></script>
+  <script type="module" src="js/index.js"></script>
+</body>
+</html>
