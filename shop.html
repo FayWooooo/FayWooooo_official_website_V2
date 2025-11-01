@@ -3,218 +3,58 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FayWooooo 官方網站</title>
-  <link rel="stylesheet" href="css/style.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+  <title>系統維護中 | FayWooooo</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Noto Sans TC", sans-serif;
+      background: radial-gradient(circle at top, #0a1a2f 0%, #000814 100%);
+      color: white;
+      text-align: center;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    h1 {
+      font-size: 3rem;
+      color: gold;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+      margin-bottom: 10px;
+    }
+    p {
+      color: #ccc;
+      font-size: 1.2rem;
+      margin-bottom: 40px;
+    }
+    a {
+      background: gold;
+      color: black;
+      padding: 12px 28px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+    a:hover {
+      background: #ffea70;
+      transform: scale(1.05);
+    }
+    footer {
+      position: fixed;
+      bottom: 15px;
+      font-size: 0.9rem;
+      color: #888;
+    }
+  </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="logo"><i class="fa-solid fa-gift"></i> Fay幣兌換中心</div>
-    <nav class="navbar">
-      <span id="coinDisplay"><i class="fa-solid fa-coins"></i> Fay幣：載入中...</span>
-      <a href="index.html"><i class="fa-solid fa-house"></i> 首頁</a>
-    </nav>
-  </header>
+  <h1>🔧 系統維護中</h1>
+  <p>我們正在進行系統升級與優化，請稍後再回來！</p>
+  <a href="/home">回首頁</a>
 
-  <main class="container2">
-    <center><section class="card2">
-      <h2><i class="fa-solid fa-box"></i> Fay寶箱</h2>
-      <p>每次開啟需 100 Fay幣，開滿 10 箱可解鎖 Discord 專屬身分組！</p>
-      <button id="openBox" class="main-btn"><i class="fa-solid fa-box-open"></i> 購買寶箱</button>
-      <p id="result" style="margin-top:15px;color:gold;"></p>
-
-      <div id="progressText" style="margin-top:8px;">載入中...</div>
-      <div id="progressBar" style="background:rgba(255,255,255,0.1);border-radius:10px;height:12px;margin-top:8px;max-width:400px;">
-        <div id="progressFill" style="height:100%;width:0%;background:gold;border-radius:10px;"></div>
-      </div>
-    </section></center>
-
-    <h2 style="margin-top:60px;"><i class="fa-solid fa-trophy"></i> 獎勵清單</h2>
-    <div id="rewardList">載入中...</div>
-  </main>
-
-  <footer>© 2025 FayWooooo</footer>
-
-  <script type="module">
-import { supabase } from "./js/supabase-config.js";
-
-const API_URL = "https://wcqutexugvrgnyusnkpv.supabase.co/functions/v1/rewards";
-const result = document.getElementById("result");
-const progressText = document.getElementById("progressText");
-const progressFill = document.getElementById("progressFill");
-const rewardList = document.getElementById("rewardList");
-const coinDisplay = document.getElementById("coinDisplay");
-
-// ✅ 取得使用者 session
-async function getUserSession() {
-  const { data } = await supabase.auth.getSession();
-  const session = data.session;
-  if (!session) {
-    alert("請先登入！");
-    throw new Error("No session");
-  }
-  return { email: session.user.email, token: session.access_token, id: session.user.id };
-}
-
-// ✅ 載入 Fay 幣餘額
-async function loadFaycoins() {
-  try {
-    const { email } = await getUserSession();
-    const { data } = await supabase
-      .from("profiles")
-      .select("faycoins")
-      .eq("email", email)
-      .maybeSingle();
-
-    if (data && data.faycoins !== undefined) {
-      coinDisplay.innerHTML = `<i class="fa-solid fa-coins"></i> Fay幣：${data.faycoins}`;
-    } else {
-      coinDisplay.textContent = "⚠️ 無法載入 Fay 幣";
-    }
-  } catch (err) {
-    console.error("loadFaycoins 錯誤:", err);
-    coinDisplay.textContent = "⚠️ 尚未登入";
-  }
-}
-
-// ✅ 啟用即時監聽 Fay 幣變化
-async function watchFaycoins() {
-  try {
-    const { id } = await getUserSession();
-
-    supabase
-      .channel("realtime-faycoins")
-      .on("postgres_changes", 
-        { event: "UPDATE", schema: "public", table: "profiles", filter: `id=eq.${id}` },
-        (payload) => {
-          const newCoins = payload.new.faycoins;
-          coinDisplay.innerHTML = `<i class="fa-solid fa-coins"></i> Fay幣：${newCoins}`;
-        }
-      )
-      .subscribe();
-  } catch (err) {
-    console.error("啟用即時監聽失敗：", err);
-  }
-}
-
-// ✅ 開箱
-document.getElementById("openBox").onclick = async () => {
-  try {
-    const { email, token } = await getUserSession();
-    result.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 交易處理中...`;
-
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({ action: "openBox", email })
-    });
-
-    const data = await res.json();
-    if (data.success) {
-      result.innerHTML = `🎉 獲得 <b>${data.reward}</b>`;
-      if (data.special) result.innerHTML += "<br>🌟 特別獎勵已解鎖！";
-      progressText.textContent = `已開啟 ${data.progress}/10 箱`;
-      progressFill.style.width = `${data.progress * 10}%`;
-    } else {
-      result.textContent = `❌ ${data.error || "開箱失敗"}`;
-    }
-  } catch (err) {
-    console.error("openBox 錯誤:", err);
-    result.textContent = "⚠️ 請先登入再嘗試開箱。";
-  }
-};
-
-// ✅ 載入獎勵清單
-async function loadRewards() {
-  try {
-    const { email, token } = await getUserSession();
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({ action: "listRewards", email })
-    });
-
-    const data = await res.json();
-    if (data.success) {
-      rewardList.innerHTML = data.rewards.map(r => `
-        <div class="reward-card">
-          <div class="reward-info">
-            <div class="reward-title">${r.title}</div>
-            <div class="reward-desc">${r.description || ""}</div>
-          </div>
-          <div class="reward-action">
-            <div class="reward-price"><i class="fa-solid fa-coins"></i> ${r.price}</div>
-            <button class="buy-btn" data-id="${r.id}" data-title="${r.title}">
-              購買
-            </button>
-          </div>
-        </div>
-      `).join("");
-
-      document.querySelectorAll(".buy-btn").forEach(btn => {
-        btn.addEventListener("click", async (e) => {
-          const id = e.target.dataset.id;
-          const title = e.target.dataset.title;
-          if (!confirm(`確認購買「${title}」嗎？`)) return;
-
-          const { email, token } = await getUserSession();
-          const res = await fetch(API_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify({ action: "buyReward", email, rewardId: id })
-          });
-
-          const result = await res.json();
-          alert(result.success ? `✅ ${result.message}` : `❌ ${result.error}`);
-        });
-      });
-    } else {
-      rewardList.textContent = "❌ 無法載入獎勵。";
-    }
-  } catch (err) {
-    console.error("loadRewards 錯誤:", err);
-    rewardList.textContent = "⚠️ 請登入以載入獎勵。";
-  }
-}
-
-// ✅ 載入開箱進度
-async function loadProgress() {
-  try {
-    const { email, token } = await getUserSession();
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({ action: "progress", email })
-    });
-    const data = await res.json();
-    if (data.success) {
-      progressText.textContent = `已開啟 ${data.progress}/10 箱`;
-      progressFill.style.width = `${data.progress * 10}%`;
-    } else {
-      progressText.textContent = "⚠️ 無法取得進度";
-    }
-  } catch (err) {
-    console.error("loadProgress 錯誤:", err);
-  }
-}
-
-// 🚀 啟動
-await loadFaycoins();
-await loadRewards();
-await loadProgress();
-await watchFaycoins(); // ✅ 即時監聽 Fay 幣變化
-</script>
+  <footer>© 2025 FayWooooo 官方網站</footer>
 </body>
 </html>
