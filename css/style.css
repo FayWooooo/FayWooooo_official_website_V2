@@ -318,3 +318,39 @@ footer {
   display: flex;
   align-items: center;
 }
+.reward-scroll {
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.05);
+  margin-top: 10px;
+}
+.reward-days {
+  display: inline-flex;
+  gap: 10px;
+}
+.reward-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 8px;
+  width: 90px;
+  text-align: center;
+  font-size: 13px;
+  color: #fff;
+}
+.reward-day.claimed {
+  background: rgba(0, 255, 127, 0.2);
+}
+.reward-day.locked {
+  background: rgba(255, 255, 255, 0.05);
+  opacity: 0.6;
+}
+.reward-day .day-num {
+  font-weight: bold;
+  color: gold;
+  margin-bottom: 4px;
+}
