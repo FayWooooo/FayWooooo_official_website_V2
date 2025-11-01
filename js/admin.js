@@ -1,10 +1,14 @@
+// ✅ 綁定 supabase-config.js
 import { supabase } from "./supabase-config.js";
 
+// ✅ Supabase Edge Functions URL
 const baseUrl = "https://wcqutexugvrgnyusnkpv.supabase.co/functions/v1/admin";
+const generateVoucherUrl = "https://wcqutexugvrgnyusnkpv.supabase.co/functions/v1/generate_vouchers";
+
+// 抓取前端 HTML 元素
 const adminPanel = document.getElementById("adminPanel");
 const accessDenied = document.getElementById("accessDenied");
 const adminContent = document.getElementById("adminContent");
-
 
 // =====================================
 // ✅ 初始化後台
@@ -19,11 +23,12 @@ async function initAdmin() {
     return;
   }
 
+  // 從 Edge Function 驗證是否為 admin
   const authRes = await fetch(baseUrl + "?action=auth", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`,
+      "Authorization": `Bearer ${token}`, // ✅ 用 supabase-config 的 token
     },
     body: JSON.stringify({ email: user.email }),
   });
@@ -35,33 +40,48 @@ async function initAdmin() {
     return;
   }
 
-  // ✅ 通過驗證 → 顯示後台
+  // ✅ 顯示後台
   adminContent.style.display = "block";
   adminPanel.classList.remove("hidden");
 
+  // 初始化功能
   loadNotifications(user.email, token);
   setupActions(user.email, token);
+  setupVoucherActions(user.email, token);
 
   const refreshBtn = document.getElementById("refreshNotifications");
   if (refreshBtn)
     refreshBtn.addEventListener("click", () => loadNotifications(user.email, token));
 }
 
-
 // =====================================
 // ❌ 權限不足顯示
 // =====================================
 function showDenied(message) {
-  adminContent.style.display = "none"; // 直接隱藏主畫面
-  accessDenied.style.display = "block"; // 顯示錯誤
+  adminContent.style.display = "none";
+  accessDenied.style.display = "block";
   accessDenied.textContent = message || "❌ 你沒有管理員權限。";
 }
 
+// =====================================
+// ⚙️ 綁定按鈕事件
+// =====================================
+function setupActions(adminEmail, token) {
+  const addCoin = document.getElementById("addCoin");
+  const reduceCoin = document.getElementById("reduceCoin");
+  const resetCoin = document.getElementById("resetCoin");
+  const publishNewsBtn = document.getElementById("publishNews");
+  const addRewardBtn = document.getElementById("addReward");
 
-
+  if (addCoin) addCoin.addEventListener("click", () => handleCoinOperation(adminEmail, token, "add"));
+  if (reduceCoin) reduceCoin.addEventListener("click", () => handleCoinOperation(adminEmail, token, "subtract"));
+  if (resetCoin) resetCoin.addEventListener("click", () => handleCoinOperation(adminEmail, token, "setZero"));
+  if (publishNewsBtn) publishNewsBtn.addEventListener("click", () => publishNews(adminEmail, token));
+  if (addRewardBtn) addRewardBtn.addEventListener("click", () => addReward(adminEmail, token));
+}
 
 // =====================================
-// 🎯 Fay 幣操作核心邏輯
+// 🎯 Fay 幣操作
 // =====================================
 async function handleCoinOperation(adminEmail, token, mode) {
   const targetEmail = document.getElementById("targetEmail").value.trim();
@@ -95,7 +115,7 @@ async function handleCoinOperation(adminEmail, token, mode) {
     const result = await resp.json();
     if (result.success) {
       alert(`✅ Fay 幣操作成功！（${mode === "add" ? "增加" : mode === "subtract" ? "減少" : "歸零"}）`);
-      await loadNotifications(adminEmail, token); // 即時刷新通知
+      await loadNotifications(adminEmail, token);
     } else {
       alert(`❌ 操作失敗：${result.error || "未知錯誤"}`);
     }
@@ -106,7 +126,7 @@ async function handleCoinOperation(adminEmail, token, mode) {
 }
 
 // =====================================
-// ✍️ 新增公告
+// ✍️ 公告管理
 // =====================================
 async function publishNews(email, token) {
   const content = document.getElementById("newsContent").value.trim();
@@ -154,7 +174,7 @@ async function addReward(email, token) {
 }
 
 // =====================================
-// 🔔 載入通知清單
+// 🔔 系統通知
 // =====================================
 async function loadNotifications(adminEmail, token) {
   const list = document.getElementById("notificationList");
@@ -189,8 +209,7 @@ async function loadNotifications(adminEmail, token) {
         <div class="notify-item">
           <b>[${n.type}]</b> ${n.message}
           <div class="notify-time">${new Date(n.created_at).toLocaleString()}</div>
-        </div>
-      `
+        </div>`
       )
       .join("");
   } catch (err) {
@@ -200,20 +219,70 @@ async function loadNotifications(adminEmail, token) {
 }
 
 // =====================================
-// ⚙️ 綁定按鈕事件
+// 🎟️ Voucher 生成功能（綁 supabase-config）
 // =====================================
-function setupActions(adminEmail, token) {
-  const addCoin = document.getElementById("addCoin");
-  const reduceCoin = document.getElementById("reduceCoin");
-  const resetCoin = document.getElementById("resetCoin");
-  const publishNewsBtn = document.getElementById("publishNews");
-  const addRewardBtn = document.getElementById("addReward");
+function setupVoucherActions(adminEmail, token) {
+  const btn = document.getElementById("createVoucher");
+  const list = document.getElementById("voucherList");
+  if (!btn) return;
 
-  if (addCoin) addCoin.addEventListener("click", () => handleCoinOperation(adminEmail, token, "add"));
-  if (reduceCoin) reduceCoin.addEventListener("click", () => handleCoinOperation(adminEmail, token, "subtract"));
-  if (resetCoin) resetCoin.addEventListener("click", () => handleCoinOperation(adminEmail, token, "setZero"));
-  if (publishNewsBtn) publishNewsBtn.addEventListener("click", () => publishNews(adminEmail, token));
-  if (addRewardBtn) addRewardBtn.addEventListener("click", () => addReward(adminEmail, token));
+  btn.addEventListener("click", async () => {
+    const count = Number(document.getElementById("voucherCount").value);
+    const adminKey = document.getElementById("adminKey").value.trim();
+
+    if (!count || count < 1 || count > 10) return alert("請輸入 1~10");
+    if (!adminKey) return alert("請輸入管理金鑰");
+
+    btn.disabled = true;
+    btn.textContent = "生成中...";
+
+    try {
+      const resp = await fetch(generateVoucherUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // ✅ 用 Supabase 的登入 token
+          "x-admin-key": adminKey,
+        },
+        body: JSON.stringify({ count, created_by: adminEmail }),
+      });
+
+      const data = await resp.json();
+      list.innerHTML = "";
+
+      if (data.success) {
+        data.codes.forEach((item) => {
+          const li = document.createElement("li");
+          li.innerHTML = `<a href="${item.url}" target="_blank" style="color:#6cf;">${item.code}</a>`;
+          li.style.background = "rgba(255,255,255,0.1)";
+          li.style.padding = "8px 10px";
+          li.style.borderRadius = "6px";
+          li.style.margin = "4px 0";
+      
+          const copyBtn = document.createElement("button");
+          copyBtn.textContent = "複製連結";
+          copyBtn.style.marginLeft = "10px";
+          copyBtn.onclick = () => {
+            navigator.clipboard.writeText(item.url);
+            copyBtn.textContent = "✅ 已複製";
+            setTimeout(() => (copyBtn.textContent = "複製連結"), 2000);
+          };
+      
+          li.appendChild(copyBtn);
+          list.appendChild(li);
+        });
+      }
+       else {
+        alert(data.error || "生成失敗");
+      }
+    } catch (e) {
+      console.error("❌ Voucher 請求錯誤:", e);
+      alert("⚠️ 生成失敗，請稍後再試。");
+    }
+
+    btn.disabled = false;
+    btn.textContent = "生成代碼";
+  });
 }
 
 // =====================================
