@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>領取 Fay 幣兌換券</title>
+
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+  <!-- 匯入全站設定 -->
+  <script src="/js/supabase-config.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Noto Sans TC', sans-serif;
+      background: linear-gradient(135deg, #191a2e, #0f1220);
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 30px 40px;
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 1rem;
+      margin: 10px 0 20px 0;
+      color: #ddd;
+    }
+
+    button {
+      background: linear-gradient(135deg, #ffb700, #ff7900);
+      border: none;
+      padding: 12px 25px;
+      font-size: 1.1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      color: #fff;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 12px rgba(255, 183, 0, 0.5);
+    }
+
+    .success { color: #4ef04e; font-weight: bold; }
+    .error { color: #ff4444; font-weight: bold; }
+    .loading { font-size: 1.1rem; opacity: 0.8; animation: blink 1.4s infinite; }
+
+    @keyframes blink { 0%,100%{opacity:0.8;}50%{opacity:0.3;} }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);} }
+
+    .footer {
+      margin-top: 30px;
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+    .footer a {
+      color: #ffb700;
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>🎁 Fay 幣兌換券</h1>
+    <p id="msg" class="loading">載入中...</p>
+    <button id="claimBtn" style="display:none;">領取 350 Fay 幣</button>
+  </div>
+  <div class="footer">
+    <a href="/home">🏠 回首頁</a>
+  </div>
+
+  <script type="module">
+    const msg = document.getElementById("msg");
+    const claimBtn = document.getElementById("claimBtn");
+
+    // 🔍 取得網址代碼 (支援 /voucher/[code] 或 ?code=)
+    const pathParts = window.location.pathname.split("/");
+    let code = pathParts[pathParts.length - 1] || new URLSearchParams(window.location.search).get("code");
+
+    if (!code) {
+      msg.textContent = "❌ 找不到代碼";
+      msg.className = "error";
+    } else {
+      msg.textContent = `代碼：${code}`;
+      init();
+    }
+
+    async function init() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        msg.innerHTML = "請先登入帳號再領取。";
+        claimBtn.style.display = "none";
+        return;
+      }
+
+      // 顯示按鈕
+      claimBtn.style.display = "inline-block";
+      claimBtn.onclick = async () => {
+        claimBtn.disabled = true;
+        msg.textContent = "兌換中...";
+        msg.className = "loading";
+
+        try {
+          const resp = await fetch("https://YOUR_PROJECT.functions.supabase.co/redeem-voucher", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code, user_id: user.id }),
+          });
+
+          const data = await resp.json();
+          if (data.success) {
+            msg.innerHTML = `🎉 <span class="success">成功領取 ${data.added} Fay 幣！</span><br>目前餘額：${data.newCoins} Fay 幣`;
+            msg.className = "success";
+            claimBtn.style.display = "none";
+          } else {
+            msg.innerHTML = "❌ " + (data.error || "兌換失敗");
+            msg.className = "error";
+            claimBtn.disabled = false;
+          }
+        } catch (e) {
+          console.error(e);
+          msg.textContent = "伺服器錯誤，請稍後再試。";
+          msg.className = "error";
+          claimBtn.disabled = false;
+        }
+      };
+    }
+  </script>
+</body>
+</html>
