@@ -241,19 +241,27 @@ function setupVoucherActions(adminEmail, token) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`, // ✅ 用 Supabase 的登入 token
+          "Authorization": `Bearer ${token}`,
           "x-admin-key": adminKey,
         },
         body: JSON.stringify({ count, created_by: adminEmail }),
       });
-
+      
       const data = await resp.json();
-      list.innerHTML = "";
-
+      console.log("🔍 Voucher Response:", data); // ← 加這行
+      
       if (data.success) {
-        data.codes.forEach((item) => {
+        console.log("📦 Codes:", data.codes);
+      
+        list.innerHTML = "";
+        data.codes.forEach((c) => {
+          const code = typeof c === "string" ? c : c.code;
+          const url = typeof c === "string"
+            ? `https://officialfaywooooo.vercel.app/voucher/${c}`
+            : c.url || `https://officialfaywooooo.vercel.app/voucher/${c.code}`;
+      
           const li = document.createElement("li");
-          li.innerHTML = `<a href="${item.url}" target="_blank" style="color:#6cf;">${item.code}</a>`;
+          li.innerHTML = `<a href="${url}" target="_blank" style="color:#6cf;">${code}</a>`;
           li.style.background = "rgba(255,255,255,0.1)";
           li.style.padding = "8px 10px";
           li.style.borderRadius = "6px";
@@ -263,7 +271,7 @@ function setupVoucherActions(adminEmail, token) {
           copyBtn.textContent = "複製連結";
           copyBtn.style.marginLeft = "10px";
           copyBtn.onclick = () => {
-            navigator.clipboard.writeText(item.url);
+            navigator.clipboard.writeText(url);
             copyBtn.textContent = "✅ 已複製";
             setTimeout(() => (copyBtn.textContent = "複製連結"), 2000);
           };
@@ -272,6 +280,8 @@ function setupVoucherActions(adminEmail, token) {
           list.appendChild(li);
         });
       }
+      
+      
        else {
         alert(data.error || "生成失敗");
       }
