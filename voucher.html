@@ -3,152 +3,116 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>領取 Fay 幣兌換券</title>
+  <title>Fay 幣兌換中心</title>
 
-  <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
-  <!-- 匯入全站設定 -->
-  <script src="/js/supabase-config.js"></script>
+  <script type="module" src="/js/supabase-config.js"></script>
 
   <style>
     body {
-      margin: 0;
-      padding: 0;
+      background: radial-gradient(circle at top, #222, #000);
+      color: #fff;
       font-family: 'Noto Sans TC', sans-serif;
-      background: linear-gradient(135deg, #191a2e, #0f1220);
-      color: #fff;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 20px;
-      padding: 30px 40px;
       text-align: center;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-      animation: fadeIn 0.6s ease-out;
+      padding: 40px;
     }
-
-    h1 {
-      font-size: 1.8rem;
-      margin-bottom: 10px;
+    .card {
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 30px;
+      display: inline-block;
+      min-width: 320px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
     }
-
-    p {
-      font-size: 1rem;
-      margin: 10px 0 20px 0;
-      color: #ddd;
-    }
-
     button {
-      background: linear-gradient(135deg, #ffb700, #ff7900);
+      background: linear-gradient(90deg, #00b09b, #96c93d);
+      color: white;
       border: none;
-      padding: 12px 25px;
-      font-size: 1.1rem;
-      border-radius: 10px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 16px;
       cursor: pointer;
-      color: #fff;
-      transition: 0.3s;
+      transition: 0.2s;
     }
-
     button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 12px rgba(255, 183, 0, 0.5);
-    }
-
-    .success { color: #4ef04e; font-weight: bold; }
-    .error { color: #ff4444; font-weight: bold; }
-    .loading { font-size: 1.1rem; opacity: 0.8; animation: blink 1.4s infinite; }
-
-    @keyframes blink { 0%,100%{opacity:0.8;}50%{opacity:0.3;} }
-    @keyframes fadeIn { from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);} }
-
-    .footer {
-      margin-top: 30px;
-      font-size: 0.9rem;
-      opacity: 0.7;
-    }
-    .footer a {
-      color: #ffb700;
-      text-decoration: none;
+      opacity: 0.9;
     }
   </style>
 </head>
 
 <body>
   <div class="card">
-    <h1>🎁 Fay 幣兌換券</h1>
-    <p id="msg" class="loading">載入中...</p>
-    <button id="claimBtn" style="display:none;">領取 350 Fay 幣</button>
-  </div>
-  <div class="footer">
-    <a href="/home">🏠 回首頁</a>
+    <h1>🎟️ Fay 幣兌換中心</h1>
+    <p id="codeDisplay">正在讀取代碼...</p>
+    <button id="redeemBtn">立即兌換</button>
+    <p id="status" style="margin-top:20px;"></p>
   </div>
 
   <script type="module">
-    const msg = document.getElementById("msg");
-    const claimBtn = document.getElementById("claimBtn");
+    import { supabase } from "/js/supabase-config.js";
 
-    // 🔍 取得網址代碼 (支援 /voucher/[code] 或 ?code=)
-    const pathParts = window.location.pathname.split("/");
-    let code = pathParts[pathParts.length - 1] || new URLSearchParams(window.location.search).get("code");
+    // 🔹 從網址解析 code (支援 /voucher?code=XXX 或 /voucher/XXX)
+    const urlParams = new URLSearchParams(window.location.search);
+    let code = urlParams.get("code");
 
+    // 如果沒有 ?code= 參數，就試著從路徑最後一段取
     if (!code) {
-      msg.textContent = "❌ 找不到代碼";
-      msg.className = "error";
-    } else {
-      msg.textContent = `代碼：${code}`;
-      init();
+      const parts = window.location.pathname.split("/");
+      code = parts.pop() || parts.pop(); // 支援結尾有斜線
     }
 
-    async function init() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        msg.innerHTML = "請先登入帳號再領取。";
-        claimBtn.style.display = "none";
+    const codeDisplay = document.getElementById("codeDisplay");
+    const redeemBtn = document.getElementById("redeemBtn");
+    const statusEl = document.getElementById("status");
+
+    if (!code) {
+      codeDisplay.textContent = "⚠️ 未提供代碼。請確認網址。";
+      redeemBtn.disabled = true;
+    } else {
+      codeDisplay.innerHTML = `代碼：<b>${code}</b>`;
+    }
+
+    redeemBtn.addEventListener("click", async () => {
+      const { data } = await supabase.auth.getSession();
+      const user = data.session?.user;
+      const token = data.session?.access_token;
+
+      if (!user || !token) {
+        statusEl.textContent = "⚠️ 請先登入帳號才能兌換 Fay 幣。";
         return;
       }
 
-      // 顯示按鈕
-      claimBtn.style.display = "inline-block";
-      claimBtn.onclick = async () => {
-        claimBtn.disabled = true;
-        msg.textContent = "兌換中...";
-        msg.className = "loading";
+      statusEl.textContent = "⏳ 正在兌換中...";
+      redeemBtn.disabled = true;
 
-        try {
-          const resp = await fetch("https://YOUR_PROJECT.functions.supabase.co/redeem-voucher", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ code, user_id: user.id }),
-          });
+      try {
+        const res = await fetch("https://wcqutexugvrgnyusnkpv.supabase.co/functions/v1/generate_vouchers", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            code,
+            user_id: user.id
+          })
+        });
 
-          const data = await resp.json();
-          if (data.success) {
-            msg.innerHTML = `🎉 <span class="success">成功領取 ${data.added} Fay 幣！</span><br>目前餘額：${data.newCoins} Fay 幣`;
-            msg.className = "success";
-            claimBtn.style.display = "none";
-          } else {
-            msg.innerHTML = "❌ " + (data.error || "兌換失敗");
-            msg.className = "error";
-            claimBtn.disabled = false;
-          }
-        } catch (e) {
-          console.error(e);
-          msg.textContent = "伺服器錯誤，請稍後再試。";
-          msg.className = "error";
-          claimBtn.disabled = false;
+        const result = await res.json();
+        console.log(result);
+
+        if (result.success) {
+          statusEl.innerHTML = `✅ 兌換成功！已獲得 <b>${result.added}</b> Fay 幣 🎉`;
+        } else {
+          statusEl.textContent = `❌ 兌換失敗：${result.error}`;
         }
-      };
-    }
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "⚠️ 系統錯誤，請稍後再試。";
+      }
+
+      redeemBtn.disabled = false;
+    });
   </script>
 </body>
 </html>
