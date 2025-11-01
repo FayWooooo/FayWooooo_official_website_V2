@@ -4,9 +4,11 @@
       { "source": "/admin", "destination": "/admin.html" },
       { "source": "/shop", "destination": "/shop.html" },
       { "source": "/pass", "destination": "/pass.html" },
-      { "source": "/missions", "destination": "/missions.html" }
+      { "source": "/missions", "destination": "/missions.html" },
+      { "source": "/voucher", "destination": "/voucher.html" }
     ]
   }
   
+
 
 
