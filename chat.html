@@ -3,16 +3,177 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fay AI</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <title>FayAI Chat - 後端驅動 UI</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <style>
+    /* ===========================================
+    ⚠️ CSS 樣式部分保持不變
+    ===========================================
+    */
+    /* 全局設置 */
+    :root {
+      --color-primary: #34ff85; /* Fay AI 綠 */
+      --color-secondary: #00bcd4; /* Line 藍 */
+      --color-bg-dark: #000814;
+      --color-bg-light: #0a1a2f;
+      --color-delete: #ff5555;
+      --color-reply: #777;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--color-bg-dark);
+      color: #fff;
+    }
+
+    /* 頂部導航欄 (TopBar) - 保持一致 */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: var(--color-bg-light);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      flex-shrink: 0; 
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--color-primary);
+    }
+    .navbar a {
+      color: #fff;
+      text-decoration: none;
+      margin-left: 15px;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    .navbar a:hover {
+      opacity: 1;
+    }
+
+    /* 主容器：兩欄佈局 */
     main {
-      background: radial-gradient(ellipse at bottom, #0a1a2f 0%, #000814 100%);
-      height: calc(100vh - 65px);
+      display: flex;
+      height: calc(100vh - 56px); 
+    }
+
+    /* 左側：聊天列表 (Line 風格側邊欄) */
+    .chat-list-sidebar {
+      width: 300px;
+      background-color: #0a131b; 
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      display: flex; 
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .sidebar-header button {
+        background: none;
+        border: none;
+        color: var(--color-primary);
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    .sidebar-header button:hover {
+        color: #56ffa0;
+    }
+
+    /* 聊天室和好友請求共同樣式 */
+    .chat-item, .request-item {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .chat-item:hover, .chat-item.active {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    /* 好友請求特定樣式 */
+    .request-section {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .request-title {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+        color: var(--color-delete);
+        background-color: rgba(255, 85, 85, 0.1);
+    }
+    .request-actions button {
+        background: var(--color-primary);
+        color: #000;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        margin-left: 5px;
+        font-size: 0.8rem;
+        cursor: pointer;
+    }
+    .request-actions button:hover {
+        opacity: 0.8;
+    }
+
+
+    .chat-avatar {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: var(--color-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-right: 15px;
+      color: #000;
+      flex-shrink: 0;
+    }
+    .chat-info {
+      flex-grow: 1;
+      min-width: 0;
+    }
+    .chat-name {
+      font-weight: 604;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .chat-last-message {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.6);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* 右側：聊天視窗 */
+    .chat-window {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+    }
+
+    .chat-header {
+      padding: 15px 20px;
+      background-color: var(--color-bg-light);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 1.2rem;
+      font-weight: 600;
+      flex-shrink: 0;
     }
 
     .chat-box {
@@ -21,84 +182,119 @@
       padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 15px; 
       scroll-behavior: smooth;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect x="0" y="0" width="100" height="100" fill="%23000814"/><circle cx="50" cy="50" r="1" fill="%230a131b"/></svg>');
     }
 
-    .bubble {
-      max-width: 75%;
-      padding: 10px 14px;
-      border-radius: 16px;
-      font-size: 15px;
-      line-height: 1.5;
-      word-break: break-word;
-      display: inline-block;
-      animation: fadeIn 0.3s ease;
-      white-space: pre-wrap; /* ✅ 保留換行 */
-      text-align: left;
+    /* 訊息氣泡 (Line 風格) */
+    .message-container {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      max-width: 80%;
     }
-
-    .from-user {
+    
+    .message-container.from-user {
       align-self: flex-end;
-      background: linear-gradient(135deg, #3affb1, #00b36b);
-      color: #000;
-      border-bottom-right-radius: 0;
-      box-shadow: 0 0 10px rgba(52, 255, 133, 0.4);
-      text-align: right;
+      flex-direction: row-reverse;
+      max-width: 75%;
     }
-
-    .from-bot {
-      align-self: flex-start;
-      background: rgba(255, 255, 255, 0.1);
+    
+    .message-avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
       color: #fff;
-      border-bottom-left-radius: 0;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .typing {
-      align-self: flex-start;
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
-      padding: 10px 16px;
-      border-radius: 16px;
-      border-bottom-left-radius: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 3px;
-      width: 60px;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    
+    .message-content-wrapper {
+        display: flex;
+        flex-direction: column;
     }
 
+    .bubble {
+      padding: 10px 14px;
+      border-radius: 10px; 
+      font-size: 15px;
+      line-height: 1.5;
+      word-break: break-word;
+      animation: fadeIn 0.3s ease;
+      white-space: pre-wrap;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    
+    .from-user .bubble {
+      background-color: var(--color-primary); 
+      color: #000;
+      border-top-right-radius: 0;
+    }
+    
+    .from-bot .bubble {
+      background-color: #38424a; /* Line 灰色氣泡 */
+      color: #fff;
+      border-top-left-radius: 0;
+    }
+    .bubble a {
+        color: var(--color-secondary);
+        text-decoration: underline;
+    }
+    .bubble a:hover {
+        color: var(--color-primary);
+    }
+
+    /* 打字中動畫 */
+    .typing-indicator {
+        align-self: flex-start;
+        display: none; /* 預設隱藏 */
+        padding: 10px 16px;
+        border-radius: 10px;
+        border-top-left-radius: 0;
+        background-color: #38424a;
+        width: auto;
+        color: #fff;
+        font-style: italic;
+    }
+    /* 實際的動畫點 */
     .dot {
-      width: 8px;
-      height: 8px;
-      background: white;
-      border-radius: 50%;
-      animation: blink 1.2s infinite ease-in-out;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #fff;
+        display: inline-block;
+        margin: 0 1px;
+        animation: loading 1.5s infinite;
+    }
+    .dot:nth-child(2) { animation-delay: 0.5s; }
+    .dot:nth-child(3) { animation-delay: 1s; }
+
+    @keyframes loading {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1); }
     }
 
-    .dot:nth-child(2) { animation-delay: 0.2s; }
-    .dot:nth-child(3) { animation-delay: 0.4s; }
 
-    @keyframes blink {
-      0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
-      40% { opacity: 1; transform: scale(1); }
-    }
-
+    /* 輸入框 */
     .chat-input {
       display: flex;
       align-items: center;
       padding: 10px;
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
+      background: var(--color-bg-light);
       border-top: 1px solid rgba(255, 255, 255, 0.1);
+      flex-shrink: 0;
     }
 
     .chat-input input {
       flex: 1;
-      padding: 10px;
+      padding: 12px;
       border: none;
-      border-radius: 10px;
+      border-radius: 20px; 
       background: rgba(255,255,255,0.1);
       color: white;
       outline: none;
@@ -107,14 +303,18 @@
 
     .chat-input button {
       margin-left: 10px;
-      padding: 10px 14px;
-      border-radius: 10px;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
       border: none;
-      background: #34ff85c6;
+      background: var(--color-primary);
       color: #000;
-      font-weight: bold;
+      font-size: 1.1rem;
       cursor: pointer;
       transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .chat-input button:hover {
@@ -126,133 +326,956 @@
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    
+    /* Modal 彈窗樣式 (不變) */
+    .modal-overlay {
+      display: none; 
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s;
+    }
+
+    .modal-content {
+      background-color: var(--color-bg-light);
+      margin: auto;
+      padding: 25px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      width: 90%;
+      max-width: 450px;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+      position: relative;
+    }
+
+    .modal-close {
+      color: #aaa;
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .modal-close:hover,
+    .modal-close:focus {
+      color: white;
+    }
+
+    .settings-section {
+      margin-bottom: 20px;
+    }
+    .settings-section h2 {
+      color: var(--color-primary);
+      border-bottom: 1px solid var(--color-primary);
+      padding-bottom: 5px;
+      margin-top: 0;
+    }
+    .settings-section h3 {
+      color: #eee;
+      margin-top: 20px;
+    }
+    .settings-section label {
+      display: block;
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+    
+    .modal-content input[type="text"] {
+      width: calc(100% - 24px); 
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      outline: none;
+      margin-top: 5px;
+    }
+    
+    .modal-content button {
+      margin-top: 15px;
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: none;
+      background: var(--color-primary);
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .modal-content button:hover {
+      background: #56ffa0;
+    }
+    .modal-content button:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
+
+    /* 訊息動作按鈕 (刪除/回覆/Emoji) */
+    .message-actions {
+        display: flex;
+        align-items: center;
+        opacity: 0; /* 預設隱藏 */
+        transition: opacity 0.2s;
+        margin-top: 4px;
+        font-size: 0.8rem;
+    }
+    .from-user .message-actions {
+        justify-content: flex-end;
+    }
+    .message-container:hover .message-actions {
+        opacity: 1; /* 滑過時顯示 */
+    }
+
+    .action-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 3px 6px;
+        border-radius: 5px;
+        margin-left: 5px;
+        color: var(--color-reply);
+    }
+    .action-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+    .delete-btn {
+        color: var(--color-delete);
+    }
   </style>
 </head>
 <body>
   <header class="topbar">
-    <div class="logo"><i class="fa-solid fa-comments"></i> Fay AI</div>
+    <div class="logo"><i class="fa-solid fa-comments"></i> Fay AI 聊天室</div>
     <nav class="navbar">
       <a href="index.html"><i class="fa-solid fa-house"></i> 首頁</a>
+      <a href="#" id="settingsBtn"><i class="fa-solid fa-gear"></i> 設定</a>
     </nav>
   </header>
 
   <main>
-    <div class="chat-box" id="chatBox">
-      <div class="bubble from-bot">嗨嗨～我是 <b>Fay AI</b> 💚<br>想問些什麼問題？</div>
+    <div class="chat-list-sidebar" id="chatListSidebar">
+      <div class="sidebar-header">
+        <span>最近聊天</span>
+        <button id="addFriendBtn" title="新增好友"><i class="fa-solid fa-user-plus"></i></button>
+      </div>
+      
+      <div class="chat-item active" data-chat-id="fay_ai_chat" data-chat-name="FayAI 語意引擎" data-chat-type="ai">
+        <div class="chat-avatar" style="background: var(--color-primary);"><i class="fa-solid fa-robot"></i></div>
+        <div class="chat-info">
+          <div class="chat-name">FayAI 語意引擎</div>
+          <div class="chat-last-message" id="ai_last_msg">嗨嗨！💚 很高興能聊聊...</div>
+        </div>
+      </div>
+      
+      <div id="friendRequestsSection" class="request-section">
+        </div>
+      
+      <div id="p2pChatList">
+        </div>
+      
     </div>
 
-    <div class="chat-input">
-      <input type="text" id="userInput" placeholder="輸入訊息..." />
-      <button id="sendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+    <div class="chat-window">
+      <div class="chat-header" id="chatHeader">FayAI 語意引擎</div>
+      <div class="chat-box" id="chatBox">
+        </div>
+        
+        <div id="typingIndicator" class="typing-indicator">
+            <span id="typingName">FayAI</span> 正在輸入...
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        </div>
+        
+      <div class="chat-input">
+        <input type="text" id="userInput" placeholder="輸入訊息..." />
+        <button id="sendBtn" title="送出"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
     </div>
   </main>
 
-  <script type="module">
-    import { supabase } from "./js/supabase-config.js";
+  <div id="settingsModal" class="modal-overlay">
+    <div class="modal-content">
+      <span class="modal-close" id="modalCloseBtn">&times;</span>
+      
+      <div class="settings-section">
+        <h2><i class="fa-solid fa-gear"></i> 設定</h2>
+        
+        <h3>個人資料</h3>
+        <p style="color: #ccc;">您的 Email: <strong id="profileEmail" style="color: white;">...loading</strong></p>
+        <label for="profileUsername">您的好友 ID (Username):</label>
+        <input type="text" id="profileUsername" placeholder="設定您的好友 ID">
+        <button id="saveProfileBtn">儲存資料</button>
+      </div>
+      
+      <hr style="border-color: rgba(255,255,255,0.1);">
+      
+      <div class="settings-section">
+        <h3><i class="fa-solid fa-user-plus"></i> 新增好友</h3>
+        <label for="friendUsernameInput">好友 ID (Username):</label>
+        <input type="text" id="friendUsernameInput" placeholder="輸入對方的 Username">
+        <button id="addFriendSubmitBtn">送出好友邀請</button>
+      </div>
 
+    </div>
+  </div>
+
+<script type="module">
+    // 引入 Supabase Config (假設您有這個檔案)
+    import { supabase } from "./js/supabase-config.js"; 
+
+    // ===========================================
+    // ✅ URL 定義 (綁定後端 Edge Function)
+    // ===========================================
+    const CHAT_HANDLER_URL = "https://wcqutexugvrgnyusnkpv.supabase.co/functions/v1/chat-handler";
+    const FAY_AI_API_URL = "https://wcqutexugvrgnyusnkpv.supabase.co/functions/v1/fayai-smart";
+
+    // ===========================================
+    // ✅ 類型定義 (模擬 TypeScript 結構)
+    // ===========================================
+    
+    /** @typedef {'p2p' | 'group' | 'ai'} ChatType */
+    /**
+     * @typedef {object} SupabaseMessage
+     * @property {number} id
+     * @property {string} chat_id
+     * @property {string} user_id
+     * @property {string} content
+     * @property {string} created_at
+     * @property {{username: string, avatar_url: string}|null} [profiles] - 發送者 profile
+     */
+     /**
+     * @typedef {object} FriendRequest
+     * @property {string} id
+     * @property {string} user_id_1 - 邀請者 ID
+     * @property {string} user_id_2 - 被邀請者 ID (即當前使用者)
+     * @property {string} status - 'pending'
+     * @property {{username: string}|null} profiles - 邀請者的 profile
+     */
+    
+    // ===========================================
+    // ✅ UI 元素選取 (保持不變)
+    // ===========================================
     const chatBox = document.getElementById("chatBox");
     const userInput = document.getElementById("userInput");
     const sendBtn = document.getElementById("sendBtn");
-    const API_URL = "https://wcqutexugvrgnyusnkpv.supabase.co/functions/v1/fayai-smart";
+    const chatHeader = document.getElementById("chatHeader");
+    const chatListSidebar = document.getElementById("chatListSidebar");
+    const p2pChatList = document.getElementById("p2pChatList");
+    const friendRequestsSection = document.getElementById("friendRequestsSection");
+    const addFriendBtn = document.getElementById("addFriendBtn");
+    const settingsBtn = document.getElementById("settingsBtn");
+    const typingIndicator = document.getElementById("typingIndicator");
 
-    let isTyping = false; // ✅ 防止重複輸入
+    // Modal 元素
+    const settingsModal = document.getElementById("settingsModal");
+    const modalCloseBtn = document.getElementById("modalCloseBtn");
+    const profileEmail = document.getElementById("profileEmail");
+    const profileUsername = document.getElementById("profileUsername");
+    const saveProfileBtn = document.getElementById("saveProfileBtn");
+    const friendUsernameInput = document.getElementById("friendUsernameInput");
+    const addFriendSubmitBtn = document.getElementById("addFriendSubmitBtn");
 
-    function addBubble(role, text) {
-      const div = document.createElement("div");
-      div.className = "bubble " + (role === "user" ? "from-user" : "from-bot");
-      div.innerHTML = text;
-      chatBox.appendChild(div);
-      chatBox.scrollTop = chatBox.scrollHeight;
-      return div;
+    // ===========================================
+    // ✅ 狀態管理 (保持不變)
+    // ===========================================
+    let isTyping = false; 
+    let currentChatId = "fay_ai_chat"; 
+    let currentChatType = "ai";
+    let currentUser = null; 
+    let realtimeChannel = null; 
+    let friendRequestInterval = null; 
+
+    // ===========================================
+    // ✅ UI 輔助函數 (只處理 DOM 操作，保持不變)
+    // ===========================================
+    
+    function linkify(text) {
+        const urlRegex = /(\b(https?):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+        return text.replace(urlRegex, (url) => {
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+        });
     }
 
-    function addTyping() {
-      const typingDiv = document.createElement("div");
-      typingDiv.className = "typing";
-      typingDiv.id = "typingIndicator";
-      typingDiv.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
-      chatBox.appendChild(typingDiv);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
+    /**
+     * @param {SupabaseMessage} message 
+     * @param {boolean} [prepend=false]
+     */
+    function addBubble(message, prepend = false) {
+      if (document.querySelector(`[data-message-id="${message.id}"]`)) return;
 
-    function removeTyping() {
-      const typingDiv = document.getElementById("typingIndicator");
-      if (typingDiv) typingDiv.remove();
-    }
+      const isUser = message.user_id === currentUser?.id;
+      const role = isUser ? 'user' : 'bot'; 
+      
+      const container = document.createElement("div");
+      container.className = `message-container ${role === "user" ? "from-user" : "from-bot"}`;
+      container.dataset.messageId = message.id; 
+      
+      const messageWrapper = document.createElement("div");
+      messageWrapper.className = "message-content-wrapper";
 
-    // ✨ 打字動畫 + 自動換行邏輯
-    async function typeText(element, text, speed = 30) {
-      const breakChars = ["。", "！", "？", "!", "?", "，", ",", "\n"];
-      let buffer = "";
+      const avatar = document.createElement("div");
+      avatar.className = "message-avatar";
+      
+      let avatarText = '??';
+      const senderProfile = isUser ? currentUser?.profile : message.profiles;
 
-      for (let i = 0; i < text.length; i++) {
-        buffer += text[i];
-        element.innerHTML = buffer;
+      if (senderProfile?.username) {
+        avatarText = senderProfile.username.substring(0, 2);
+      } else if (role === 'bot') {
+         avatar.innerHTML = '<i class="fa-solid fa-robot"></i>';
+      } else {
+         avatarText = isUser ? 'ME' : '??';
+      }
+      if (role !== 'bot') {
+          avatar.textContent = avatarText;
+      }
+      
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      
+      let content = message.content.replace(/\n/g, '<br>');
+      content = linkify(content);
+      bubble.innerHTML = content;
+      
+      // 訊息動作列
+      const actions = document.createElement("div");
+      actions.className = "message-actions";
 
-        // 換行條件：標點符號 + 適度句長
-        if (breakChars.includes(text[i]) && Math.random() < 0.4) {
-          buffer += "\n";
-          element.innerHTML = buffer;
-        }
-
-        chatBox.scrollTop = chatBox.scrollHeight;
-        await new Promise((resolve) => setTimeout(resolve, speed));
+      // 1. 刪除/收回 (綁定新的 deleteMessage 函式，該函式呼叫 Edge Function)
+      if (isUser && currentChatType !== 'ai') {
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "action-btn delete-btn";
+        deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i> 收回';
+        deleteBtn.onclick = () => window.deleteMessage(message.id);
+        actions.appendChild(deleteBtn);
+      }
+      
+      // 2. 回覆按鈕 (綁定新的 handleReply 函式，該函式呼叫 Edge Function)
+      if (currentChatType !== 'ai') {
+        const replyBtn = document.createElement("button");
+        replyBtn.className = "action-btn reply-btn";
+        replyBtn.innerHTML = '<i class="fa-solid fa-reply"></i> 回覆';
+        replyBtn.onclick = () => window.handleReply(message.id);
+        actions.appendChild(replyBtn);
+      }
+      
+      // 3. Emoji 反應按鈕 (綁定新的 handleEmoji 函式，該函式呼叫 Edge Function)
+      const emojiBtn = document.createElement("button");
+      emojiBtn.className = "action-btn emoji-btn";
+      emojiBtn.innerHTML = '<i class="fa-regular fa-face-smile"></i>';
+      emojiBtn.onclick = () => window.handleEmoji(message.id);
+      actions.appendChild(emojiBtn);
+      
+      // 組合結構
+      messageWrapper.appendChild(bubble);
+      messageWrapper.appendChild(actions);
+      
+      container.appendChild(avatar);
+      container.appendChild(messageWrapper);
+      
+      if (prepend) {
+        chatBox.prepend(container); 
+      } else {
+        chatBox.appendChild(container); 
+        scrollToBottom();
       }
     }
 
+    function addChatItemToSidebar(id, name, type, lastMessage) {
+        const item = document.createElement("div");
+        item.className = "chat-item";
+        item.dataset.chatId = id;
+        item.dataset.chatName = name;
+        item.dataset.chatType = type;
+        
+        const avatarIcon = type === 'p2p' ? 'fa-user' : 'fa-users';
+        
+        item.innerHTML = `
+          <div class="chat-avatar" style="background: #2a9d8f;"><i class="fa-solid ${avatarIcon}"></i></div>
+          <div class="chat-info">
+            <div class="chat-name">${name}</div>
+            <div class="chat-last-message" id="last_msg_${id}">${lastMessage || '無訊息'}</div>
+          </div>
+        `;
+        p2pChatList.appendChild(item);
+    }
+    
+    function scrollToBottom() {
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    
+    function showTypingIndicator(username = 'FayAI') {
+        document.getElementById("typingName").textContent = username;
+        typingIndicator.style.display = 'flex';
+        scrollToBottom();
+    }
+    
+    function hideTypingIndicator() {
+        typingIndicator.style.display = 'none';
+    }
+
+
+    // ===========================================
+    // ✅ 輔助工具 (Helper: 呼叫 Edge Function)
+    // ===========================================
+    
+    /**
+     * 通用函式：使用用戶的 JWT 呼叫 Chat Handler Edge Function
+     * @param {string} action - 'send' | 'delete' | 'reply' | 'react' | 'add_friend'
+     * @param {object} [body={}] - 傳遞給 Edge Function 的參數
+     */
+    async function callChatHandler(action, body = {}) {
+        const { data } = await supabase.auth.getSession();
+        const token = data.session?.access_token;
+        if (!token) throw new Error("Authentication token not available.");
+
+        const res = await fetch(CHAT_HANDLER_URL, {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json", 
+                "Authorization": `Bearer ${token}` 
+            },
+            body: JSON.stringify({ action, ...body }),
+        });
+        
+        if (res.status === 401) {
+            alert("❌ 驗證失敗。請重新登入。");
+            supabase.auth.signOut();
+            return;
+        }
+        
+        const result = await res.json();
+        // Edge Function 可能回傳帶有 error 屬性的 JSON
+        if (result.error) throw new Error(result.error);
+        return result;
+    }
+
+
+    // ===========================================
+    // ✅ 訊息核心邏輯 (Edge Function 驅動)
+    // ===========================================
+
+    /**
+     * @param {number} messageId
+     * @global
+     */
+    window.deleteMessage = async function(messageId) {
+        if (!confirm("確定要收回這則訊息嗎？")) return;
+        
+        try {
+            // 呼叫 Edge Function 處理刪除操作
+            await callChatHandler('delete', { message_id: messageId });
+            // Realtime DELETE 會處理 UI 移除
+        } catch (error) {
+            console.error("刪除失敗:", error);
+            alert(`刪除失敗: ${error.message}`);
+        }
+    }
+    
+    /**
+     * @param {number} messageId
+     * @global
+     */
+    window.handleReply = async function(messageId) {
+        const replyContent = prompt("請輸入您的回覆內容:");
+        if (!replyContent || !replyContent.trim()) return;
+
+        try {
+            await callChatHandler('reply', { 
+                chat_id: currentChatId, 
+                reply_to: messageId, 
+                content: replyContent.trim()
+            });
+            alert("回覆訊息已發送！");
+        } catch (error) {
+            alert(`回覆失敗: ${error.message}`);
+        }
+    }
+    
+    /**
+     * @param {number} messageId
+     * @global
+     */
+    window.handleEmoji = async function(messageId) {
+        const emoji = prompt("輸入一個 Emoji 表情 (例如: 👍, ❤️, 😂):");
+        if (!emoji || !emoji.trim()) return;
+        
+        try {
+            await callChatHandler('react', { message_id: messageId, emoji: emoji.trim() });
+            alert(`已對訊息 ${messageId} 加入 ${emoji.trim()} 反應。`);
+        } catch (error) {
+            alert(`反應失敗: ${error.message}`);
+        }
+    }
+
+
     async function sendMessage() {
-      if (isTyping) return; // ✅ 若 AI 正在回覆，不允許新輸入
+      if (isTyping) return;
       const msg = userInput.value.trim();
       if (!msg) return;
 
-      addBubble("user", msg);
       userInput.value = "";
       sendBtn.disabled = true;
-      userInput.disabled = true;
-      userInput.style.opacity = "0.6";
       isTyping = true;
-
-      addTyping();
-
+      
       try {
-        const { data } = await supabase.auth.getSession();
-        const token = data.session?.access_token;
-
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            userId: data.session?.user.id || "guest",
-            message: msg,
-          }),
-        });
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const result = await res.json();
-        removeTyping();
-
-        const botBubble = addBubble("bot", "");
-        const reply = result.reply || "我暫時沒回應，請稍後再試 💬";
-        await typeText(botBubble, reply, 35);
+        if (currentChatType === 'ai') {
+          // --- AI 聊天 (呼叫 FayAI Smart Function) ---
+          // 先在 UI 顯示用戶訊息
+          addBubble({ 
+              id: Date.now(), 
+              chat_id: 'fay_ai_chat', 
+              user_id: currentUser.id, 
+              content: msg, 
+              profiles: { username: currentUser.profile.username } 
+          });
+          
+          showTypingIndicator(); // 顯示 AI 正在輸入
+          await handleAiChat(msg); // 呼叫 AI 處理器
+          hideTypingIndicator(); 
+          
+        } else {
+          // --- P2P / Group 聊天 (呼叫 Chat Handler Function) ---
+          await callChatHandler('send', {
+              chat_id: currentChatId,
+              content: msg,
+          });
+          // Realtime 會自動接收並顯示
+        }
       } catch (e) {
-        console.error("❌ Chat Error:", e);
-        removeTyping();
-        addBubble("bot", "⚠️ 出錯了，請稍後再試。");
+        console.error("❌ 訊息發送錯誤:", e);
+        alert(`訊息發送失敗: ${e.message}`);
       } finally {
         sendBtn.disabled = false;
-        userInput.disabled = false;
-        userInput.style.opacity = "1";
-        isTyping = false; // ✅ 回覆完成後才能輸入下一題
+        isTyping = false;
+      }
+    }
+    
+    // AI 聊天 (呼叫 FayAI Smart Function)
+    async function handleAiChat(msg) {
+        const { data } = await supabase.auth.getSession();
+        const res = await fetch(FAY_AI_API_URL, {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json", 
+                "Authorization": `Bearer ${data.session?.access_token}` 
+            },
+            body: JSON.stringify({ userId: currentUser.id, message: msg }),
+        });
+        const result = await res.json();
+        const reply = result.reply || "AI 錯誤 💬";
+        addBubble({ 
+            id: Date.now() + 1, 
+            chat_id: 'fay_ai_chat', 
+            user_id: 'fay_ai_bot', 
+            content: reply, 
+            profiles: { username: 'AI' } 
+        });
+    }
+
+    // ===========================================
+    // ✅ 好友與設定 (部分 Edge Function 驅動)
+    // ===========================================
+    
+    async function handleAddFriend() {
+      const friendUsername = friendUsernameInput.value.trim();
+      if (!friendUsername) {
+         alert("請輸入好友的「好友 ID」(Username):");
+         return;
+      }
+      
+      addFriendSubmitBtn.disabled = true;
+      addFriendSubmitBtn.textContent = "傳送中...";
+      
+      try {
+        // 呼叫 Edge Function 處理新增好友 (並建立聊天室)
+        const result = await callChatHandler('add_friend', { friend_username: friendUsername });
+        
+        alert("已成功新增好友並建立聊天室！");
+        friendUsernameInput.value = ""; 
+        closeSettings(); 
+        await loadChatList(); // 重新載入聊天列表
+      } catch (e) {
+        alert(`新增好友失敗: ${e.message}`);
+        console.error("新增好友錯誤:", e);
+      } finally {
+        addFriendSubmitBtn.disabled = false;
+        addFriendSubmitBtn.textContent = "送出好友邀請";
       }
     }
 
-    sendBtn.onclick = sendMessage;
-    userInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") sendMessage();
-    });
+    // ===========================================
+    // ✅ 讀取、Realtime、Profile (保留 Supabase Client RLS)
+    // ===========================================
+    
+    // **注意:** 這些是 READ/STATUS 相關操作，保留 Supabase Client 呼叫以利用 RLS
+    
+    async function loadChatHistory(chatId) {
+        chatBox.innerHTML = ''; 
+        
+        const { data, error } = await supabase
+            .from('messages')
+            .select(`*, profiles ( username, avatar_url )`)
+            .eq('chat_id', chatId)
+            .order('created_at', { ascending: true })
+            .limit(100);
+            
+        if (error) {
+            console.error("載入歷史訊息失敗:", error);
+            return;
+        }
+        
+        for (const message of data) {
+            addBubble(message, false); 
+        }
+        scrollToBottom();
+    }
+
+    function subscribeToChat(newChatId) {
+        if (realtimeChannel) {
+            supabase.removeChannel(realtimeChannel);
+        }
+
+        realtimeChannel = supabase.channel(`chat_${newChatId}`);
+        
+        realtimeChannel
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'messages', filter: `chat_id=eq.${newChatId}` },
+                async (payload) => {
+                    const newMessage = payload.new;
+                    // 抓取發送者的 Profile 
+                    let profile = newMessage.profiles;
+                    if (!profile) {
+                         const { data } = await supabase
+                          .from('profiles')
+                          .select('username')
+                          .eq('id', newMessage.user_id)
+                          .single();
+                         profile = data;
+                    }
+
+                    addBubble({ ...newMessage, profiles: profile });
+                    
+                    // 更新側邊欄最後一則訊息
+                    const lastMsgEl = document.getElementById(`last_msg_${newChatId}`);
+                    if (lastMsgEl) lastMsgEl.textContent = newMessage.content.substring(0, 30);
+                }
+            )
+            .on(
+                'postgres_changes',
+                { event: 'DELETE', schema: 'public', table: 'messages', filter: `chat_id=eq.${newChatId}` },
+                (payload) => {
+                    const deletedId = payload.old.id;
+                    const msgElement = document.querySelector(`[data-message-id="${deletedId}"]`);
+                    if (msgElement) {
+                        msgElement.remove();
+                    }
+                }
+            )
+            .subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    console.log(`✅ Realtime Channel ${newChatId} subscribed!`);
+                }
+            });
+    }
+
+    function switchChat(chatItem) {
+        const newChatId = chatItem.dataset.chatId;
+        const newChatName = chatItem.dataset.chatName;
+        const newChatType = /** @type {ChatType} */ (chatItem.dataset.chatType);
+
+        if (newChatId === currentChatId) return;
+
+        document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
+        chatItem.classList.add('active');
+        
+        currentChatId = newChatId;
+        currentChatType = newChatType;
+        chatHeader.textContent = newChatName;
+        chatBox.innerHTML = ''; 
+        hideTypingIndicator(); 
+
+        if (newChatType === 'ai') {
+          if (realtimeChannel) { 
+              supabase.removeChannel(realtimeChannel);
+              realtimeChannel = null;
+          }
+          addBubble({ 
+              id: Date.now(), 
+              chat_id: newChatId,
+              user_id: 'fay_ai_bot', 
+              content: '嗨嗨！💚 我是 FayAI 語意引擎，我們來聊聊 FayWooooo 的最新內容吧！', 
+              profiles: { username: 'AI' } 
+          });
+        } else {
+          loadChatHistory(newChatId);
+          subscribeToChat(newChatId);
+        }
+    }
+    
+    async function loadProfileSettings() {
+      profileEmail.textContent = currentUser.email || "...";
+      profileUsername.value = currentUser.profile?.username || "";
+      profileUsername.placeholder = currentUser.profile?.username ? "" : "請設定您的好友 ID";
+    }
+    
+    async function saveProfileSettings() {
+      const newUsername = profileUsername.value.trim();
+      if (!newUsername) {
+        alert("好友 ID (Username) 不可為空！");
+        return;
+      }
+      
+      saveProfileBtn.disabled = true;
+      saveProfileBtn.textContent = "儲存中...";
+      
+      // 直接使用 Supabase Client 處理 Profile 更新 (非 Edge Function 範圍)
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ username: newUsername })
+        .eq('id', currentUser.id)
+        .select()
+        .single();
+        
+      if (error) {
+        alert(`儲存失敗: ${error.message}`);
+      } else {
+        alert("個人資料已儲存！");
+        currentUser.profile = data; 
+        closeSettings();
+      }
+      saveProfileBtn.disabled = false;
+      saveProfileBtn.textContent = "儲存資料";
+    }
+
+    async function loadFriendRequests() {
+        if (!currentUser?.id) return;
+        
+        const { data, error } = await supabase
+            .from('friends')
+            .select(`
+                id,
+                user_id_1,
+                profiles:user_id_1 (username)
+            `)
+            .eq('user_id_2', currentUser.id)
+            .eq('status', 'pending');
+            
+        if (error) {
+            console.error("載入好友請求失敗:", error);
+            return;
+        }
+
+        // 清空並重建
+        friendRequestsSection.innerHTML = '';
+        if (data && data.length > 0) {
+            const title = document.createElement('div');
+            title.className = 'request-title';
+            title.textContent = `待處理好友請求 (${data.length})`;
+            friendRequestsSection.appendChild(title);
+            
+            data.forEach(/** @param {FriendRequest} request */ (request) => {
+                const item = document.createElement('div');
+                item.className = 'request-item';
+                item.innerHTML = `
+                    <div class="chat-avatar" style="background: var(--color-delete);"><i class="fa-solid fa-bell"></i></div>
+                    <div class="chat-info">
+                        <div class="chat-name">${request.profiles?.username || '未知用戶'}</div>
+                        <div class="chat-last-message">請求加入好友</div>
+                    </div>
+                    <div class="request-actions">
+                        <button data-id="${request.id}" class="accept-btn">接受</button>
+                        <button data-id="${request.id}" class="reject-btn" style="background: #555; color: white;">拒絕</button>
+                    </div>
+                `;
+                friendRequestsSection.appendChild(item);
+            });
+            
+            // 綁定接受按鈕事件 (使用原有的 RPC 邏輯)
+            friendRequestsSection.querySelectorAll('.accept-btn').forEach(btn => {
+                btn.onclick = (e) => acceptFriendRequest(e.target.dataset.id);
+            });
+            // 綁定拒絕按鈕事件 (使用原有的 Placeholder)
+            friendRequestsSection.querySelectorAll('.reject-btn').forEach(btn => {
+                btn.onclick = () => alert("TODO: 拒絕功能尚未實作！");
+            });
+        }
+    }
+    
+    /**
+     * @param {string} requestId
+     */
+    async function acceptFriendRequest(requestId) {
+        // 使用原有的 RPC 邏輯來處理狀態變更和聊天室建立
+        const { data, error } = await supabase.rpc('accept_friend_request', {
+            request_id: requestId
+        });
+        
+        if (error) {
+            alert(`接受失敗: ${error.message}`);
+            console.error("接受請求錯誤:", error);
+            return;
+        }
+        
+        const result = data;
+        if (result.error) {
+            alert(result.error);
+        } else {
+            alert("已成功接受好友請求，並開啟新的聊天室！");
+            // 重新載入列表和請求
+            await loadFriendRequests();
+            await loadChatList();
+        }
+    }
+    
+    function openSettings() {
+      loadProfileSettings(); 
+      settingsModal.style.display = "flex";
+    }
+    
+    function closeSettings() {
+      settingsModal.style.display = "none";
+    }
+
+    async function loadChatList() {
+        p2pChatList.innerHTML = ''; 
+        
+        // 使用原有的 RPC 邏輯來載入列表
+        const { data, error } = await supabase.rpc('get_chat_list');
+        
+        if (error) {
+            console.error("載入聊天列表失敗:", error);
+            return;
+        }
+
+        if (data) {
+            for (const chat of data) {
+                addChatItemToSidebar(chat.id, chat.name, chat.type, chat.last_message_content);
+            }
+        }
+    }
+
+    // ===========================================
+    // ✅ App 啟動
+    // ===========================================
+    async function initializeApp() {
+    // 1. 檢查登入並取得 Profile
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        alert("請先登入！");
+        window.location.href = 'index.html'; 
+        return;
+    }
+    
+    const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+    if (error || !profile) {
+        console.error("抓取 Profile 失敗", error);
+    }
+    
+    currentUser = user;
+    currentUser.profile = profile; 
+    
+    // 2. 載入列表 & 待處理請求
+    await loadChatList();
+    await loadFriendRequests();
+        
+        // 每 15 秒檢查一次新的好友請求
+        friendRequestInterval = setInterval(loadFriendRequests, 15000); 
+        
+        // 3. 綁定事件
+        sendBtn.onclick = sendMessage;
+        userInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        addFriendBtn.onclick = openSettings; 
+        settingsBtn.onclick = openSettings; 
+        modalCloseBtn.onclick = closeSettings;
+        saveProfileBtn.onclick = saveProfileSettings;
+        addFriendSubmitBtn.onclick = handleAddFriend; // 呼叫 Edge Function
+        
+        // 點擊 Modal 外部灰色區域關閉
+        window.onclick = (event) => {
+          if (event.target == settingsModal) {
+            closeSettings();
+          }
+        }
+        
+        // 點擊聊天室項目切換
+        chatListSidebar.addEventListener('click', (e) => {
+            const item = e.target.closest('.chat-item');
+            if (item) switchChat(item);
+        });
+        
+        // 4. 預設啟動 AI 聊天室
+        const aiChat = document.querySelector('.chat-item[data-chat-type="ai"]');
+        if (aiChat) switchChat(aiChat);
+    }
+    
+// 監聽 Session 狀態變化，只有在確認登入後才啟動 App
+supabase.auth.onAuthStateChange(async (event, session) => {
+    // INITIAL_SESSION: 第一次載入頁面時狀態已確認
+    // SIGNED_IN: 從登入頁跳轉過來或重新整理 token
+    if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+        if (!session) {
+            // 處理極端情況，如果 INITIAL_SESSION 但沒有 session
+            alert("請先登入！");
+            window.location.href = 'index.html'; 
+            return;
+        }
+        
+        const user = session.user;
+        
+        // 重新執行 Profile 抓取 (因為 session.user 不包含 custom profile data)
+        const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+        if (error || !profile) {
+            console.error("抓取 Profile 失敗", error);
+            // 這裡可以選擇是否導向錯誤頁面，為了不中斷 App，先繼續
+        }
+
+        // 啟動應用程式核心邏輯
+        await initializeApp(user, profile); 
+        
+        // 確保只啟動一次好友請求檢查 Interval
+        if (!friendRequestInterval) {
+            friendRequestInterval = setInterval(loadFriendRequests, 15000); 
+        }
+
+    } else if (event === 'SIGNED_OUT') {
+        // 用戶登出
+        if (friendRequestInterval) {
+            clearInterval(friendRequestInterval);
+        }
+        window.location.href = 'index.html';
+    }
+});
+
+    initializeApp();
+
   </script>
 </body>
 </html>
