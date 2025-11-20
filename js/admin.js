@@ -257,7 +257,7 @@ function setupVoucherActions(adminEmail, token) {
         data.codes.forEach((c) => {
           const code = typeof c === "string" ? c : c.code;
           const url = typeof c === "string"
-            ? `https://officialfaywooooo.vercel.app/voucher?code=${c}`
+            ? `https://officialfaywooooo.vercel.app/voucher/${c}`
             : c.url || `https://officialfaywooooo.vercel.app/voucher?code=${c.code}`;
       
           const li = document.createElement("li");
