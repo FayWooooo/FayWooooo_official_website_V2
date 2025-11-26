@@ -8,7 +8,6 @@
 
 <meta name="description" content="FayWooooo Live 提供即時直播、限時任務、Live Pass XP 升級與 Fay 幣獎勵。登入即可在觀看直播途中自動獲得 XP，每 15 分鐘領取獎勵並兌換 Fay 幣。">
 
-
 <!-- Google 字型 -->
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -86,8 +85,11 @@ body::before {
 .live-status {
   display: inline-block; background: #ff0000; color: white; padding: 4px 12px; 
   border-radius: 4px; font-size: 0.8rem; font-weight: bold; margin-bottom: 15px;
-  box-shadow: 0 0 10px rgba(255,0,0,0.5); animation: pulse 2s infinite;
+  box-shadow: 0 0 10px rgba(255,0,0,0.5); transition: 0.3s;
 }
+.live-status.active { animation: pulse 2s infinite; }
+.live-status.paused { background: #555; animation: none; box-shadow:none; opacity: 0.7; }
+
 @keyframes pulse { 0%{opacity:1;} 50%{opacity:0.7;} 100%{opacity:1;} }
 
 /* 🌟 Live Pass 卡片 */
@@ -118,7 +120,9 @@ body::before {
 .mission-xp { font-size:0.8rem; background:rgba(255,255,255,0.15); padding:2px 6px; border-radius:4px; color:#ffd700; }
 .mission-desc { font-size:0.8rem; color:#aaa; margin-bottom:8px; }
 .status-text { font-size:0.8rem; font-weight:bold; color:#34ff85; display:flex; align-items:center; gap:5px; }
-
+.mobile-nav {
+  display: none;
+}
 /* Logs */
 #logArea {
   margin-top: 15px; font-size: 0.8rem; color: #ccc; max-height: 100px; overflow-y: auto;
@@ -129,115 +133,109 @@ body::before {
 
 /* Scrollbar */
 ::-webkit-scrollbar { width:6px; }
-::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.3); border-radius:3px; }.mobile-nav {
-  display: none;
-}
+::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.3); border-radius:3px; }
 /* ============================================
-   📱 Mobile UI — 小於 600px 進入手機模式
+📱 Mobile UI — 小於 600px 進入手機模式
 ============================================ */
 @media(max-width: 600px) {
 
-  body {
-    padding-top: 70px;
-    font-size: 14px;
-  }
+body {
+ padding-top: 70px;
+ font-size: 14px;
+}
 
-  /* Topbar 更像 APP 的上方工具列 */
-  .topbar {
-    height: 55px;
-    padding: 0 12px;
-  }
+/* Topbar 更像 APP 的上方工具列 */
+.topbar {
+ height: 55px;
+ padding: 0 12px;
+ display: block;
+}
 
-  .logo {
-    font-size: 1rem;
-  }
+.logo {
+ font-size: 1rem;
+}
 
-  /* 導覽列改為「底部固定的 4 大按鈕」 */
-  .navbar {
-    display: none; /* 隱藏原本的 */
-  }
+/* 導覽列改為「底部固定的 4 大按鈕」 */
+.navbar {
+ display: none; /* 隱藏原本的 */
+}
 
-  /* 新的底部導航列 */
-  body::after {
-    content:"";
-    height:60px;
-    visibility:hidden; /* 騰出空間 */
-    display:block;
-  }
+/* 新的底部導航列 */
+body::after {
+ content:"";
+ height:60px;
+ visibility:hidden; /* 騰出空間 */
+ display:block;
+}
 
-  .mobile-nav {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    height: 60px;
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(10px);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    border-top: 1px solid rgba(255,255,255,0.3);
-    z-index: 999;
-  }
-  .mobile-nav a {
-    text-decoration: none;
-    color: #000;
-    font-size: 0.75rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .mobile-nav i {
-    font-size: 1.2rem;
-    margin-bottom: 2px;
-  }
+.mobile-nav {
+ position: fixed;
+ bottom: 0; left: 0; right: 0;
+ height: 60px;
+ background: rgba(255,255,255,0.95);
+ backdrop-filter: blur(10px);
+ display: flex;
+ justify-content: space-around;
+ align-items: center;
+ border-top: 1px solid rgba(255,255,255,0.3);
+ z-index: 999;
+}
+.mobile-nav a {
+ text-decoration: none;
+ color: #000;
+ font-size: 0.75rem;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+}
+.mobile-nav i {
+ font-size: 1.2rem;
+ margin-bottom: 2px;
+}
 
-  /* Layout 完整手機化 */
-  .grid-container {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
+/* Layout 完整手機化 */
+.grid-container {
+ grid-template-columns: 1fr;
+ gap: 15px;
+}
 
-  /* 直播 iframe 縮小邊距 */
-  .live-frame iframe {
-    border-radius: 10px;
-  }
+/* 直播 iframe 縮小邊距 */
+.live-frame iframe {
+ border-radius: 10px;
+}
 
-  .glass-card {
-    padding: 18px;
-  }
+.glass-card {
+ padding: 18px;
+}
 
-  /* Live Pass 卡片縮小 */
-  .pass-title {
-    font-size: 1.2rem;
-  }
-  .reward-amount {
-    font-size: 1.1rem;
-  }
+/* Live Pass 卡片縮小 */
+.pass-title {
+ font-size: 1.2rem;
+}
+.reward-amount {
+ font-size: 1.1rem;
+}
 
-  /* 任務項目更緊湊 */
-  .mission-item {
-    padding: 10px;
-  }
-  .mission-title {
-    font-size: 0.9rem;
-  }
-  .mission-desc {
-    font-size: 0.75rem;
-  }
+/* 任務項目更緊湊 */
+.mission-item {
+ padding: 10px;
+}
+.mission-title {
+ font-size: 0.9rem;
+}
+.mission-desc {
+ font-size: 0.75rem;
+}
 }
 
 </style>
 </head>
 
 <body>
-  <div class="mobile-nav">
-    <a href="home"><i class="fas fa-home"></i>首頁</a>
-    <a href="shop"><i class="fas fa-store"></i>兌換</a>
-    <a href="live" class="active"><i class="fas fa-video"></i>直播</a>
-  </div>
-  
+
 <!-- 導覽列 -->
 <div class="topbar">
-  <div class="logo">FayWooooo 直播通行證中心</div>
+  <div class="logo">FayWooooo</div>
   <div class="navbar">
     <a href="index.html">首頁</a>
     <a href="missions.html">任務</a>
@@ -249,9 +247,13 @@ body::before {
     <img id="avatarBtn" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Guest" class="avatar">
   </div>
 </div>
-
+<div class="mobile-nav">
+  <a href="home"><i class="fas fa-home"></i>首頁</a>
+  <a href="shop"><i class="fas fa-store"></i>兌換</a>
+  <a href="live" class="active"><i class="fas fa-video"></i>直播</a>
+</div>
 <main>
- 
+  
   <div class="grid-container">
     
     <!-- 左側：直播 -->
@@ -259,7 +261,9 @@ body::before {
       <div class="glass-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
           <h3 style="margin:0; color:#34ff85; display:flex; align-items:center; gap:10px;">
-             <span class="live-status">LIVE</span> 正在直播
+             <!-- 狀態標籤 -->
+             <span id="liveStatusBadge" class="live-status active">LIVE</span> 
+             正在直播
              <!-- 隱藏的管理員編輯按鈕 -->
              <i id="adminEditBtn" class="fas fa-edit" style="display:none; cursor:pointer; color:#ffd700; font-size:1.2rem; margin-left:8px;" title="修改直播連結 (管理員)"></i>
           </h3>
@@ -308,11 +312,12 @@ body::before {
         </div>
         <p style="font-size:0.8rem; text-align:center; color:#888; margin-top:8px;">
           下一次 XP 發放: <span id="nextDropMin" style="color:white; font-weight:bold;">15</span> 分鐘後
+          <span id="pauseHint" style="display:none; color:#ff4444; font-size:0.7rem;">(暫停中)</span>
         </p>
 
         <div class="pass-info">
           <ul>
-            <li>• 每 15 分鐘獲得 50 XP</li>
+            <li>• 觀看 15 分鐘獲得 50 XP (切換視窗將暫停)</li>
             <li>• 每 100 XP 自動兌換 50 Fay 幣</li>
             <li>• 完成下方任務加速升級</li>
           </ul>
@@ -347,10 +352,39 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const FUNCTION_URL = `${supabaseUrl}/functions/v1/LivePage`;
 
 let pingInterval;
+let isPageVisible = true; // 網頁是否可見
+
 const STATE = {
   sessionMinutes: 0,
   xp: 0
 };
+
+// =======================
+// 偵測網頁可見性 (Page Visibility)
+// =======================
+document.addEventListener("visibilitychange", () => {
+  isPageVisible = !document.hidden;
+  updateStatusBadge();
+});
+
+function updateStatusBadge() {
+  const badge = document.getElementById("liveStatusBadge");
+  const pauseHint = document.getElementById("pauseHint");
+  
+  if (!isPageVisible) {
+    // 暫停狀態
+    badge.textContent = "PAUSED (AWAY)";
+    badge.className = "live-status paused";
+    pauseHint.style.display = "inline";
+    console.log("⏸️ 頁面隱藏，暫停計時");
+  } else {
+    // 活躍狀態
+    badge.textContent = "LIVE";
+    badge.className = "live-status active";
+    pauseHint.style.display = "none";
+    console.log("▶️ 頁面活躍，恢復計時");
+  }
+}
 
 // =======================
 // 核心 API 呼叫
@@ -419,7 +453,7 @@ function updateUI(data) {
     });
   }
   
-  // 6. 直播影片與標題 (從後端 DB 讀取)
+  // 6. 直播影片與標題
   if(data.youtubeId) {
     const frame = document.getElementById("ytLive");
     // 只有當 ID 不同時才更新 src，避免一直重新整理影片
@@ -435,8 +469,6 @@ function updateUI(data) {
   if (data.isAdmin) {
     const editBtn = document.getElementById("adminEditBtn");
     editBtn.style.display = "inline-block";
-    
-    // 綁定編輯點擊事件
     editBtn.onclick = async () => {
         const newId = prompt("請輸入新的 YouTube 影片 ID (例如: n28znBIzLCk):", data.youtubeId);
         if (!newId) return;
@@ -505,6 +537,13 @@ async function init() {
 
   // 啟動心跳 (每 60 秒 Ping 一次)
   pingInterval = setInterval(async () => {
+    
+    // 🛑 關鍵：如果網頁不可見(掛網/切分頁)，不發送請求
+    if (!isPageVisible) {
+        console.log("😴 掛網中 (Tab inactive)，跳過 Ping");
+        return;
+    }
+
     const pong = await callBackend("ping");
     if(!pong.error) updateUI(pong);
   }, 60000); 
