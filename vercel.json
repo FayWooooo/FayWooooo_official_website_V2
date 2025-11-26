@@ -4,7 +4,7 @@
       { "source": "/admin", "destination": "/admin.html" },
       { "source": "/shop", "destination": "/shop.html" },
       { "source": "/pass", "destination": "/pass.html" },
-      { "source": "/missions", "destination": "/missions.html" },
+      { "source": "/live", "destination": "/live.html" },
       { "source": "/voucher", "destination": "/voucher.html" },
       { "source": "/chat", "destination": "/chat.html" }
     ]
