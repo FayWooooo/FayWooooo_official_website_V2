@@ -354,3 +354,99 @@ footer {
   color: gold;
   margin-bottom: 4px;
 }
+.mobile-nav {
+  display: none;
+}
+/* ============================================
+📱 Mobile UI — 小於 600px 進入手機模式
+============================================ */
+@media(max-width: 600px) {
+
+body {
+ padding-top: 70px;
+ font-size: 14px;
+}
+
+/* Topbar 更像 APP 的上方工具列 */
+.topbar {
+ height: 55px;
+ padding: 0 12px;
+ display: block;
+}
+
+.logo {
+ font-size: 1rem;
+}
+
+/* 導覽列改為「底部固定的 4 大按鈕」 */
+.navbar {
+ display: none; /* 隱藏原本的 */
+}
+
+/* 新的底部導航列 */
+body::after {
+ content:"";
+ height:60px;
+ visibility:hidden; /* 騰出空間 */
+ display:block;
+}
+
+.mobile-nav {
+ position: fixed;
+ bottom: 0; left: 0; right: 0;
+ height: 60px;
+ background: rgba(255,255,255,0.95);
+ backdrop-filter: blur(10px);
+ display: flex;
+ justify-content: space-around;
+ align-items: center;
+ border-top: 1px solid rgba(255,255,255,0.3);
+ z-index: 999;
+}
+.mobile-nav a {
+ text-decoration: none;
+ color: #000;
+ font-size: 0.75rem;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+}
+.mobile-nav i {
+ font-size: 1.2rem;
+ margin-bottom: 2px;
+}
+
+/* Layout 完整手機化 */
+.grid-container {
+ grid-template-columns: 1fr;
+ gap: 15px;
+}
+
+/* 直播 iframe 縮小邊距 */
+.live-frame iframe {
+ border-radius: 10px;
+}
+
+.glass-card {
+ padding: 18px;
+}
+
+/* Live Pass 卡片縮小 */
+.pass-title {
+ font-size: 1.2rem;
+}
+.reward-amount {
+ font-size: 1.1rem;
+}
+
+/* 任務項目更緊湊 */
+.mission-item {
+ padding: 10px;
+}
+.mission-title {
+ font-size: 0.9rem;
+}
+.mission-desc {
+ font-size: 0.75rem;
+}
+}

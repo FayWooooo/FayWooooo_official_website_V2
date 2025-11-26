@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -21,6 +22,12 @@
       <a href="index.html"><i class="fa-solid fa-house"></i> 首頁</a>
     </nav>
   </header>
+<div class="mobile-nav">
+  <a href="home"><i class="fas fa-home"></i>首頁</a>
+  <a href="shop"><i class="fas fa-store"></i>兌換</a>
+  <a href="live" class="active"><i class="fas fa-video"></i>直播</a>
+  <span id="coinDisplayMobile" style="color: black;"><i class="fa-solid fa-coins"></i>&nbsp;--</span>
+</div>
 
   <main class="container2">
 
@@ -65,6 +72,7 @@
     const progressFill = document.getElementById("progressFill");
     const rewardList = document.getElementById("rewardList");
     const coinDisplay = document.getElementById("coinDisplay");
+const coinDisplayMobile = document.getElementById("coinDisplayMobile");
     const claimBtn = document.getElementById("claimDaily");
     const dailyStatus = document.getElementById("dailyStatus");
     const dailyRewardList = document.getElementById("dailyRewardList");
@@ -75,6 +83,7 @@
       const session = data.session;
       if (!session) {
         alert("請先登入！");
+        location.replace("index.html");
         throw new Error("No session");
       }
       return { email: session.user.email, token: session.access_token, id: session.user.id };
@@ -82,15 +91,23 @@
 
     // ✅ Fay幣顯示
     async function loadFaycoins() {
-      try {
-        const { email } = await getUserSession();
-        const { data } = await supabase.from("profiles").select("faycoins").eq("email", email).maybeSingle();
-        coinDisplay.innerHTML = data?.faycoins !== undefined ?
-          `<i class="fa-solid fa-coins"></i>&nbsp;Fay幣：${data.faycoins}` : "⚠️ 無法載入 Fay 幣";
-      } catch {
-        coinDisplay.textContent = "⚠️ 尚未登入";
-      }
-    }
+  try {
+    const { email } = await getUserSession();
+    const { data } = await supabase.from("profiles").select("faycoins").eq("email", email).maybeSingle();
+
+    const coinText = data?.faycoins !== undefined
+      ? `<i class="fa-solid fa-coins"></i>&nbsp;Fay幣：${data.faycoins}`
+      : "⚠️ 無法載入 Fay 幣";
+
+    coinDisplay.innerHTML = coinText;
+    coinDisplayMobile.innerHTML = coinText;
+
+  } catch {
+    coinDisplay.textContent = "⚠️ 尚未登入";
+    coinDisplayMobile.textContent = "⚠️ 尚未登入";
+  }
+}
+
 
     // ✅ 即時監聽 Fay 幣變化
     async function watchFaycoins() {
@@ -101,6 +118,7 @@
             (payload) => {
               const newCoins = payload.new.faycoins;
               coinDisplay.innerHTML = `<i class="fa-solid fa-coins"></i>&nbsp;Fay幣：${newCoins}`;
+coinDisplayMobile.innerHTML = `<i class="fa-solid fa-coins"></i>&nbsp;Fay幣：${newCoins}`;
             })
           .subscribe();
       } catch (err) { console.error("啟用即時監聽失敗：", err); }
