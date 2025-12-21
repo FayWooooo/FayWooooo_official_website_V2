@@ -21,7 +21,7 @@ body {
   padding-top: 80px;
 }
 ::selection {
-  background: rgba(4, 255, 0, 0.236)
+  background: rgba(247, 0, 255, 0.236)
 }
 main{
   background: linear-gradient(135deg, #2a004d, #0a0a0a);
@@ -504,3 +504,4 @@ body::after {
  font-size: 0.75rem;
 }
 }
+
