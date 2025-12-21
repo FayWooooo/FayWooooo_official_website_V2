@@ -23,13 +23,15 @@
     </nav>
   </header>
 <div class="mobile-nav">
-  <a href="home"><i class="fas fa-home"></i>首頁</a>
-  <a href="shop"><i class="fas fa-store"></i>兌換</a>
-  <a href="live" class="active"><i class="fas fa-video"></i>直播</a>
+  <a href="index.html"><i class="fas fa-home"></i>首頁</a>
+  <a href="shop.html" class="active"><i class="fas fa-store"></i>兌換</a>
+  <a href="live.html"><i class="fas fa-video"></i>直播</a>
   <span id="coinDisplayMobile" style="color: black;"><i class="fa-solid fa-coins"></i>&nbsp;--</span>
 </div>
 
   <main class="container2">
+
+    <div id="notification" class="notification"></div>
 
     <!-- 🎯 每日登入獎勵 -->
     <center>
@@ -47,7 +49,9 @@
     <center><section class="card2">
       <h2><i class="fa-solid fa-box"></i> Fay寶箱</h2>
       <p>每次開啟需 100 Fay幣，開滿 10 箱可解鎖 Discord 專屬身分組(僅限第1次能獲取，稱號為:寶箱富翁)！</p>
-      <button id="openBox" class="main-btn"><i class="fa-solid fa-box-open"></i> 購買寶箱</button>
+      <div class="box-container">
+        <div class="box" id="boxElement">🎁</div>
+      </div>
       <p id="result" style="margin-top:15px;color:gold;"></p>
 
       <div id="progressText" style="margin-top:8px;">載入中...</div>
@@ -61,7 +65,9 @@
     <div id="rewardList">載入中...</div>
   </main>
 
-  <footer>© 2025 FayWooooo 官方網站</footer>
+  <footer>
+    <p>© 2025 FayWooooo 官方網站 | <a href="https://www.youtube.com/@FayWooooo" target="_blank">YouTube</a></p>
+  </footer>
 
   <script type="module">
     import { supabase } from "./js/supabase-config.js";
@@ -82,11 +88,22 @@ const coinDisplayMobile = document.getElementById("coinDisplayMobile");
       const { data } = await supabase.auth.getSession();
       const session = data.session;
       if (!session) {
-        alert("請先登入！");
+        showNotification("請先登入！", "error");
         location.replace("index.html");
         throw new Error("No session");
       }
       return { email: session.user.email, token: session.access_token, id: session.user.id };
+    }
+
+    // ✅ 顯示通知
+    function showNotification(message, type = "success") {
+      const notification = document.getElementById("notification");
+      notification.textContent = message;
+      notification.className = `notification ${type}`;
+      notification.classList.add("show");
+      setTimeout(() => {
+        notification.classList.remove("show");
+      }, 3000);
     }
 
     // ✅ Fay幣顯示
@@ -125,7 +142,7 @@ coinDisplayMobile.innerHTML = `<i class="fa-solid fa-coins"></i>&nbsp;Fay幣：$
     }
 
     // ✅ 寶箱功能
-    document.getElementById("openBox").onclick = async () => {
+    document.getElementById("boxElement").onclick = async () => {
       try {
         const { email, token } = await getUserSession();
         result.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 交易處理中...`;
@@ -140,9 +157,15 @@ coinDisplayMobile.innerHTML = `<i class="fa-solid fa-coins"></i>&nbsp;Fay幣：$
           if (data.special) result.innerHTML += "<br>🌟 特別獎勵已解鎖！";
           progressText.textContent = `已開啟 ${data.progress}/10 箱`;
           progressFill.style.width = `${data.progress * 10}%`;
-        } else result.textContent = `❌ ${data.error || "開箱失敗"}`;
+          // 添加3D動畫
+          const boxEl = document.getElementById("boxElement");
+          boxEl.classList.add("box-animation");
+          setTimeout(() => boxEl.classList.remove("box-animation"), 1000);
+        } else {
+          showNotification(`❌ ${data.error || "開箱失敗"}`, "error");
+        }
       } catch {
-        result.textContent = "⚠️ 請先登入再嘗試開箱。";
+        showNotification("⚠️ 請先登入再嘗試開箱。", "error");
       }
     };
 
@@ -181,7 +204,7 @@ coinDisplayMobile.innerHTML = `<i class="fa-solid fa-coins"></i>&nbsp;Fay幣：$
                 body: JSON.stringify({ action: "buyReward", email, rewardId: id })
               });
               const result = await res.json();
-              alert(result.success ? `✅ ${result.message}` : `❌ ${result.error}`);
+              showNotification(result.success ? `✅ ${result.message}` : `❌ ${result.error}`, result.success ? "success" : "error");
             });
           });
         } else rewardList.textContent = "❌ 無法載入獎勵。";

@@ -15,7 +15,7 @@ body {
   padding: 0;
   color: white;
   text-align: center;
-  background: rgb(255, 255, 255);
+  background: linear-gradient(135deg, #1a0033, #000000);
   min-height: 100vh;
   overflow-x: hidden;
   padding-top: 80px;
@@ -24,21 +24,17 @@ body {
   background: rgba(4, 255, 0, 0.236)
 }
 main{
-  background: radial-gradient(ellipse at bottom, #0a1a2f 0%, #000814 100%);
+  background: linear-gradient(135deg, #2a004d, #0a0a0a);
   padding: 50px;
 }
 .title{
   font-size: 75px;
-  color: #34ff85c6;
-  text-shadow:
-    0 0 10px #34ff85c6,
-    0 0 20px #34ff85c0,
-    0 0 40px #34ff85b4,
-    0 0 80px #34ff85a8;
+  color: #ff00ff;
+
   animation: glow 2s ease-in-out infinite, hue 5s linear infinite;
-  background: #34ff85c6;
+  background: linear-gradient(45deg, #ff00ff, #ffff00);
   -webkit-background-clip: text;
-  -webkit-text-fill-color: #0a1a2f; /* 文字的填充色 */
+  -webkit-text-fill-color: transparent;
   color: transparent;
 }
 /* ===== 🔹 全站背景動態光點 ===== */
@@ -46,15 +42,17 @@ body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background: radial-gradient(circle at 30% 30%, rgba(255, 215, 0, 0.05), transparent 60%),
-              radial-gradient(circle at 70% 80%, rgba(0, 140, 255, 0.05), transparent 60%);
+  background: radial-gradient(circle at 30% 30%, rgba(255,0,255,0.1), transparent 60%),
+              radial-gradient(circle at 70% 80%, rgba(255,255,0,0.1), transparent 60%);
   z-index: -1;
   animation: moveGlow 25s linear infinite alternate;
 }
-@keyframes moveGlow {
-  from { background-position: 0% 0%, 100% 100%; }
-  to { background-position: 100% 50%, 0% 50%; }
+@keyframes boxOpen {
+  0% { transform: rotateY(0deg) scale(1); }
+  50% { transform: rotateY(180deg) scale(1.2); }
+  100% { transform: rotateY(360deg) scale(1); }
 }
+.box-animation { animation: boxOpen 1s ease-in-out; }
 
 /* ===== 🔹 頂部導覽列 ===== */
 .topbar {
@@ -63,14 +61,14 @@ body::before {
   left: 0;
   right: 0;
   height: 65px;
-  background:white;
-  color: #000;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255,255,255,0.9);
+  border-bottom: 1px solid rgba(255,255,255,0.2);
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 25px;
   z-index: 100;
+  backdrop-filter: blur(10px);
 }
 
 .logo {
@@ -94,9 +92,9 @@ body::before {
   transition: 0.2s;
 }
 .navbar a:hover {
-  background: rgb(255, 250, 203);
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-  color: #000814;
+  background: linear-gradient(45deg, #ff00ff, #ffff00);
+  box-shadow: 0 0 10px rgba(255,0,255,0.5);
+  color: #fff;
 }
 
 /* ===== 🔹 主內容容器 ===== */
@@ -112,37 +110,37 @@ body::before {
 }
 /* ===== 🔹 卡片樣式 (任務 / 兌換 / 公告通用) ===== */
 .card {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255,255,255,0.1);
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255,0,255,0.3);
   backdrop-filter: blur(20px);
   padding: 25px;
   margin-bottom: 20px;
   text-align: left;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 20px rgba(255,0,255,0.2);
   transition: 0.3s;
 }
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+  box-shadow: 0 0 25px rgba(255,0,255,0.5);
 }
 .card h3 {
   margin-top: 0;
-  color: gold;
+  color: #ffff00;
 }
 .card p {
   color: #ddd;
   line-height: 1.6;
 }
 .card2 {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255,255,255,0.1);
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255,0,255,0.3);
   backdrop-filter: blur(20px);
   padding: 25px;
   margin-bottom: 20px;
   text-align: left;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 20px rgba(255,0,255,0.2);
   transition: 0.3s;
   width: 100%;
   max-width: 600px;
@@ -151,7 +149,7 @@ body::before {
 
 .card2 h3 {
   margin-top: 0;
-  color: gold;
+  color: #ffff00;
 }
 .card2 p {
   color: #ddd;
@@ -159,16 +157,16 @@ body::before {
 }
 /* ===== 🔹 主標題動畫 ===== */
 h1, h2 {
-  text-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+  text-shadow: 0 0 20px rgba(255,0,255,0.4);
   letter-spacing: 1px;
 }
 
 /* ===== 🔹 按鈕樣式 ===== */
 .btn, .main-btn {
-  background:white;
+  background: linear-gradient(45deg, #ff00ff, #ffff00);
   border: none;
   border-radius: 12px;
-  color: black;
+  color: #000;
   font-weight: bold;
   padding: 10px 20px;
   cursor: pointer;
@@ -177,7 +175,7 @@ h1, h2 {
 }
 .btn:hover, .main-btn:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 10px gold;
+  box-shadow: 0 0 10px #ff00ff;
 }
 
 /* ===== 🔹 兌換卡片 (Rewards Page) ===== */
@@ -185,7 +183,7 @@ h1, h2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255,255,255,0.1);
   border-radius: 18px;
   padding: 18px 25px;
   margin-bottom: 18px;
@@ -195,11 +193,11 @@ h1, h2 {
   transition: 0.3s;
   margin-bottom: 25px;
   backdrop-filter: blur(20px);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 20px rgba(255,0,255,0.2);
+  border: 1px solid rgba(255,0,255,0.3);
 }
 .reward-card:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255,255,255,0.15);
   transform: translateY(-3px);
 }
 .reward-info {
@@ -214,7 +212,7 @@ h1, h2 {
   font-size: 0.95rem;
 }
 .reward-price {
-  color: gold;
+  color: #ffff00;
   font-weight: 700;
 }
 
@@ -223,6 +221,7 @@ h1, h2 {
   display: flex;
   align-items: center;
   gap: 12px;
+  color: #000;
 }
 #avatarBtn, .avatar-btn {
   width: 45px;
@@ -260,12 +259,13 @@ h1, h2 {
   display: block;
   width: 100%;
   margin-top: 10px;
-  background:white;
+  background: linear-gradient(45deg, #ff00ff, #ffff00);
   border: none;
   border-radius: 8px;
   padding: 8px;
   font-weight: bold;
   cursor: pointer;
+  color: #000;
 }
 .profile-menu .logout {
   background: crimson;
@@ -285,10 +285,10 @@ footer {
   width: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgb(196, 196, 196);
+  background: rgba(255,0,255,0.3);
   border-radius: 4px;
 }::-webkit-scrollbar-thumb:hover {
-  background: rgb(165, 165, 165);
+  background: rgba(255,0,255,0.5);
 }
 .reward-action {
   display: flex;
@@ -297,8 +297,8 @@ footer {
   gap: 8px;
 }
 .buy-btn {
-  background: gold;
-  color: black;
+  background: linear-gradient(45deg, #ff00ff, #ffff00);
+  color: #000;
   border: none;
   border-radius: 10px;
   padding: 6px 12px;
@@ -307,7 +307,7 @@ footer {
   transition: 0.2s;
 }
 .buy-btn:hover {
-  background: #ffda55;
+  background: linear-gradient(45deg, #ffff00, #ff00ff);
   transform: scale(1.05);
 }
 #coinDisplay {
@@ -351,12 +351,66 @@ footer {
 }
 .reward-day .day-num {
   font-weight: bold;
-  color: gold;
+  color: #ffff00;
   margin-bottom: 4px;
 }
 .mobile-nav {
   display: none;
 }
+/* ===== 🔹 通知訊息 ===== */
+.notification {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.9);
+  color: white;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(255,0,255,0.5);
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.notification.show {
+  opacity: 1;
+}
+.notification.success {
+  border: 1px solid #00ff00;
+}
+.notification.error {
+  border: 1px solid #ff0000;
+}
+/* ===== 🔹 寶箱樣式 ===== */
+.box-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+}
+.box {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(45deg, #8b4513, #daa520);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+  box-shadow: 0 0 10px rgba(255,215,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+}
+.box:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(255,215,0,0.8);
+}
+@keyframes boxOpen {
+  0% { transform: rotateY(0deg) scale(1); }
+  50% { transform: rotateY(180deg) scale(1.2); }
+  100% { transform: rotateY(360deg) scale(1); }
+}
+.box-animation { animation: boxOpen 1s ease-in-out; }
 /* ============================================
 📱 Mobile UI — 小於 600px 進入手機模式
 ============================================ */
