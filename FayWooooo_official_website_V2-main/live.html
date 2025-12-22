@@ -1,0 +1,557 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<base href="/live">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FayWooooo Live｜直播通行證中心｜即時直播、任務、XP 獎勵與 Fay 幣</title>
+
+<meta name="description" content="FayWooooo Live 提供即時直播、限時任務、Live Pass XP 升級與 Fay 幣獎勵。登入即可在觀看直播途中自動獲得 XP，每 15 分鐘領取獎勵並兌換 Fay 幣。">
+
+<!-- Google 字型 -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700&display=swap" rel="stylesheet">
+
+<!-- Font Awesome Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+/* ================================================
+   🌈 FayWooooo Live Page 全站統一風格
+================================================ */
+* { box-sizing: border-box; }
+body {
+  font-family: "Noto Sans TC", sans-serif;
+  margin:0; padding:0; color:white; text-align:center;
+  background: rgb(10,10,10); min-height:100vh;
+  overflow-x:hidden; padding-top:80px;
+}
+::selection { background: rgba(4,255,0,0.236); }
+
+main { background: radial-gradient(ellipse at bottom,#0a1a2f 0%,#000814 100%); padding:50px 20px; }
+
+.title {
+  font-size:3rem; margin-bottom: 40px;
+  color:#34ff85c6;
+  text-shadow:0 0 10px #34ff85c6,0 0 20px #34ff85c0,0 0 40px #34ff85b4;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+@keyframes glow { from{text-shadow:0 0 10px #34ff85c6;} to{text-shadow:0 0 30px #34ff85ff;} }
+
+body::before {
+  content:""; position:fixed; inset:0;
+  background: radial-gradient(circle at 30% 30%, rgba(255,215,0,0.05), transparent 60%),
+              radial-gradient(circle at 70% 80%, rgba(0,140,255,0.05), transparent 60%);
+  z-index:-1;
+}
+
+/* 頂部導覽列 */
+.topbar {
+  position: fixed; top:0; left:0; right:0;
+  height:65px; background:rgba(255,255,255,0.95);
+  border-bottom:1px solid rgba(255,255,255,0.2);
+  display:flex; justify-content:space-between; align-items:center;
+  padding:0 25px; z-index:100; backdrop-filter: blur(10px);
+}
+.logo { font-size:1.4rem; font-weight:700; color:#000; }
+.navbar { display:flex; gap:16px; }
+.navbar a { text-decoration:none; color:#000; font-weight:600; padding:8px 14px; border-radius:10px; transition:0.2s; }
+.navbar a:hover, .navbar a.active { background: rgb(255,250,203); box-shadow:0 0 10px rgba(255,215,0,0.5); color:#000814; }
+
+/* 使用者資訊區 */
+#userArea { display:flex; align-items:center; gap:12px; }
+#avatarBtn { width:40px; height:40px; border-radius:50%; border:2px solid #ccc; object-fit: cover; }
+#coinDisplay { color:#000; font-weight:bold; font-size:1rem; display:flex; align-items:center; gap:5px; }
+
+/* Grid Layout */
+.grid-container {
+  display: grid; grid-template-columns: 2fr 1fr; gap: 25px;
+  max-width: 1200px; margin: 0 auto;
+}
+@media(max-width: 900px) { .grid-container { grid-template-columns: 1fr; } }
+
+/* 通用卡片風格 */
+.glass-card {
+  background: rgba(255,255,255,0.08);
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(20px);
+  padding:25px;
+  box-shadow:0 0 20px rgba(0,0,0,0.3);
+  text-align: left;
+}
+
+/* 直播區 */
+.live-frame iframe { width:100%; aspect-ratio: 16/9; border-radius:12px; border:none; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+.live-status {
+  display: inline-block; background: #ff0000; color: white; padding: 4px 12px; 
+  border-radius: 4px; font-size: 0.8rem; font-weight: bold; margin-bottom: 15px;
+  box-shadow: 0 0 10px rgba(255,0,0,0.5); transition: 0.3s;
+}
+.live-status.active { animation: pulse 2s infinite; }
+.live-status.paused { background: #555; animation: none; box-shadow:none; opacity: 0.7; }
+
+@keyframes pulse { 0%{opacity:1;} 50%{opacity:0.7;} 100%{opacity:1;} }
+
+/* 🌟 Live Pass 卡片 */
+.pass-card { position:relative; overflow:hidden; background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); }
+.pass-header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:15px; }
+.pass-title { font-size:1.5rem; font-weight:800; font-style:italic; color:white; margin:0; }
+.pass-season { font-size:0.8rem; color:#aaa; letter-spacing:2px; }
+.next-reward { text-align:right; }
+.reward-amount { color: gold; font-size:1.4rem; font-weight:bold; text-shadow:0 0 10px rgba(255,215,0,0.5); }
+
+/* 進度條 */
+.progress-label { display:flex; justify-content:space-between; font-size:0.85rem; color:#34ff85; margin-bottom:5px; font-weight:bold; }
+.progress-track { width:100%; height:12px; background:rgba(0,0,0,0.5); border-radius:6px; border:1px solid rgba(255,255,255,0.2); overflow:hidden; }
+.progress-fill { height:100%; background: linear-gradient(90deg, #34ff85, #00d4ff); width:0%; transition: width 0.5s ease; box-shadow: 0 0 10px #34ff85; }
+
+.pass-info { font-size:0.8rem; color:#888; margin-top:15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px; }
+.pass-info li { margin-bottom:4px; list-style: none; }
+.pass-info ul { padding-left:0; margin:0; }
+
+/* 任務列表 */
+.mission-item {
+  background: rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px; padding:12px; margin-bottom:10px; transition:0.3s;
+}
+.mission-item.completed { border-color:#34ff85; background:rgba(52, 255, 133, 0.05); }
+.mission-header { display:flex; justify-content:space-between; margin-bottom:5px; }
+.mission-title { font-weight:bold; font-size:0.95rem; }
+.mission-xp { font-size:0.8rem; background:rgba(255,255,255,0.15); padding:2px 6px; border-radius:4px; color:#ffd700; }
+.mission-desc { font-size:0.8rem; color:#aaa; margin-bottom:8px; }
+.status-text { font-size:0.8rem; font-weight:bold; color:#34ff85; display:flex; align-items:center; gap:5px; }
+.mobile-nav {
+  display: none;
+}
+/* Logs */
+#logArea {
+  margin-top: 15px; font-size: 0.8rem; color: #ccc; max-height: 100px; overflow-y: auto;
+}
+.log-entry { margin-bottom: 4px; animation: fadeIn 0.5s; }
+.log-entry span { color: #34ff85; margin-right:5px; }
+@keyframes fadeIn { from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:translateY(0);} }
+
+/* Scrollbar */
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.3); border-radius:3px; }
+/* ============================================
+📱 Mobile UI — 小於 600px 進入手機模式
+============================================ */
+@media(max-width: 600px) {
+
+body {
+ padding-top: 70px;
+ font-size: 14px;
+}
+
+/* Topbar 更像 APP 的上方工具列 */
+.topbar {
+ height: 55px;
+ padding: 0 12px;
+ display: block;
+}
+
+.logo {
+ font-size: 1rem;
+}
+
+/* 導覽列改為「底部固定的 4 大按鈕」 */
+.navbar {
+ display: none; /* 隱藏原本的 */
+}
+
+/* 新的底部導航列 */
+body::after {
+ content:"";
+ height:60px;
+ visibility:hidden; /* 騰出空間 */
+ display:block;
+}
+
+.mobile-nav {
+ position: fixed;
+ bottom: 0; left: 0; right: 0;
+ height: 60px;
+ background: rgba(255,255,255,0.95);
+ backdrop-filter: blur(10px);
+ display: flex;
+ justify-content: space-around;
+ align-items: center;
+ border-top: 1px solid rgba(255,255,255,0.3);
+ z-index: 999;
+}
+.mobile-nav a {
+ text-decoration: none;
+ color: #000;
+ font-size: 0.75rem;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+}
+.mobile-nav i {
+ font-size: 1.2rem;
+ margin-bottom: 2px;
+}
+
+/* Layout 完整手機化 */
+.grid-container {
+ grid-template-columns: 1fr;
+ gap: 15px;
+}
+
+/* 直播 iframe 縮小邊距 */
+.live-frame iframe {
+ border-radius: 10px;
+}
+
+.glass-card {
+ padding: 18px;
+}
+
+/* Live Pass 卡片縮小 */
+.pass-title {
+ font-size: 1.2rem;
+}
+.reward-amount {
+ font-size: 1.1rem;
+}
+
+/* 任務項目更緊湊 */
+.mission-item {
+ padding: 10px;
+}
+.mission-title {
+ font-size: 0.9rem;
+}
+.mission-desc {
+ font-size: 0.75rem;
+}
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- 導覽列 -->
+<div class="topbar">
+  <div class="logo">FayWooooo</div>
+  <div class="navbar">
+    <a href="index.html">首頁</a>
+    <a href="missions.html">任務</a>
+    <a href="shop.html">兌換</a>
+    <a href="live.html" class="active">直播</a>
+  </div>
+  <div id="userArea">
+    <span id="coinDisplay"><i class="fas fa-coins"></i> <span id="coinValue">...</span></span>
+    <img id="avatarBtn" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Guest" class="avatar">
+  </div>
+</div>
+<div class="mobile-nav">
+  <a href="index.html"><i class="fas fa-home"></i>首頁</a>
+  <a href="shop.html"><i class="fas fa-store"></i>兌換</a>
+  <a href="live.html" class="active"><i class="fas fa-video"></i>直播</a>
+</div>
+<main>
+  
+  <div class="grid-container">
+    
+    <!-- 左側：直播 -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+      <div class="glass-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h3 style="margin:0; color:#34ff85; display:flex; align-items:center; gap:10px;">
+             <!-- 狀態標籤 -->
+             <span id="liveStatusBadge" class="live-status active">LIVE</span> 
+             正在直播
+             <!-- 隱藏的管理員編輯按鈕 -->
+             <i id="adminEditBtn" class="fas fa-edit" style="display:none; cursor:pointer; color:#ffd700; font-size:1.2rem; margin-left:8px;" title="修改直播連結 (管理員)"></i>
+          </h3>
+          <span id="videoTitle" style="color:#aaa; font-size:0.9rem;">載入中...</span>
+        </div>
+        
+        <div class="live-frame">
+          <iframe id="ytLive" src="" allowfullscreen></iframe>
+        </div>
+      </div>
+      
+      <!-- 系統紀錄 -->
+      <div class="glass-card" style="min-height:150px;">
+        <h4 style="margin:0 0 10px 0; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:5px; color:#aaa;">
+          <i class="fas fa-terminal"></i> 獎勵紀錄
+        </h4>
+        <div id="logArea">
+          <div class="log-entry" style="color:#666;">等待活動中...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右側：Live Pass 與任務 -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+      
+      <!-- Live Pass Card -->
+      <div class="glass-card pass-card">
+        <div class="pass-header">
+          <div>
+            <div class="pass-title">LIVE PASS</div>
+            <div class="pass-season">SEASON 1</div>
+          </div>
+          <div class="next-reward">
+            <div style="font-size:0.8rem; color:#ddd;">Next Drop</div>
+            <div class="reward-amount">+50 <i class="fas fa-coins"></i></div>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-label">
+          <span id="xpDisplay">0 XP</span>
+          <span>100 XP</span>
+        </div>
+        <div class="progress-track">
+          <div id="xpBar" class="progress-fill"></div>
+        </div>
+        <p style="font-size:0.8rem; text-align:center; color:#888; margin-top:8px;">
+          下一次 XP 發放: <span id="nextDropMin" style="color:white; font-weight:bold;">15</span> 分鐘後
+          <span id="pauseHint" style="display:none; color:#ff4444; font-size:0.7rem;">(暫停中)</span>
+        </p>
+
+        <div class="pass-info">
+          <ul>
+            <li>• 觀看 15 分鐘獲得 50 XP (切換視窗將暫停)</li>
+            <li>• 每 100 XP 自動兌換 50 Fay 幣</li>
+            <li>• 完成下方任務加速升級</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 任務列表 -->
+      <div class="glass-card">
+        <h3 style="margin-top:0; margin-bottom:15px; font-size:1.1rem;">
+          <i class="fas fa-tasks"></i> 限時任務
+        </h3>
+        <div id="missionList">
+          <!-- 任務項目由 JS 渲染 -->
+          <div style="text-align:center; color:#aaa;">載入任務中...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer>© 2025 FayWooooo 官方網站</footer>
+
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+// ⚠️ 替換為你的 Supabase URL 和 Anon Key
+const supabaseUrl = "https://wcqutexugvrgnyusnkpv.supabase.co";
+const supabaseKey = "YOUR_ANON_KEY"; 
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+const FUNCTION_URL = `${supabaseUrl}/functions/v1/LivePage`;
+
+let pingInterval;
+let isPageVisible = true; // 網頁是否可見
+
+const STATE = {
+  sessionMinutes: 0,
+  xp: 0
+};
+
+// =======================
+// 偵測網頁可見性 (Page Visibility)
+// =======================
+document.addEventListener("visibilitychange", () => {
+  isPageVisible = !document.hidden;
+  updateStatusBadge();
+});
+
+function updateStatusBadge() {
+  const badge = document.getElementById("liveStatusBadge");
+  const pauseHint = document.getElementById("pauseHint");
+  
+  if (!isPageVisible) {
+    // 暫停狀態
+    badge.textContent = "PAUSED (AWAY)";
+    badge.className = "live-status paused";
+    pauseHint.style.display = "inline";
+    console.log("⏸️ 頁面隱藏，暫停計時");
+  } else {
+    // 活躍狀態
+    badge.textContent = "LIVE";
+    badge.className = "live-status active";
+    pauseHint.style.display = "none";
+    console.log("▶️ 頁面活躍，恢復計時");
+  }
+}
+
+// =======================
+// 核心 API 呼叫
+// =======================
+async function callBackend(action, payload = {}) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return { error: "尚未登入" };
+
+  try {
+    const res = await fetch(FUNCTION_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({ action, ...payload })
+    });
+    return await res.json();
+  } catch (e) {
+    console.error("API Error:", e);
+    return { error: e.message };
+  }
+}
+
+// =======================
+// UI 更新邏輯
+// =======================
+function updateUI(data) {
+  if (!data) return;
+
+  // 1. 更新 Fay 幣
+  if (data.fayCoins !== undefined) {
+    document.getElementById("coinValue").textContent = data.fayCoins;
+  }
+
+  // 2. 更新 Live Pass XP 條
+  const currentXP = data.currentXP || 0;
+  STATE.xp = currentXP;
+  
+  const xpPercent = Math.min(100, (currentXP / 100) * 100);
+  document.getElementById("xpBar").style.width = `${xpPercent}%`;
+  document.getElementById("xpDisplay").textContent = `${currentXP} XP`;
+
+  // 3. 更新倒數時間
+  if (data.sessionMinutes !== undefined) {
+    STATE.sessionMinutes = data.sessionMinutes;
+    const minsUntilReward = 15 - (data.sessionMinutes % 15);
+    document.getElementById("nextDropMin").textContent = minsUntilReward === 0 ? 15 : minsUntilReward;
+  }
+
+  // 4. 更新任務列表
+  if (data.missions) {
+    renderMissions(data.missions);
+  }
+
+  // 5. 顯示 Logs
+  if (data.logs && data.logs.length > 0) {
+    const logArea = document.getElementById("logArea");
+    if (logArea.innerText.includes("等待")) logArea.innerHTML = "";
+    
+    data.logs.forEach(log => {
+      const div = document.createElement("div");
+      div.className = "log-entry";
+      div.innerHTML = `<span>➜</span> ${log}`;
+      logArea.prepend(div);
+    });
+  }
+  
+  // 6. 直播影片與標題
+  if(data.youtubeId) {
+    const frame = document.getElementById("ytLive");
+    // 只有當 ID 不同時才更新 src，避免一直重新整理影片
+    if(!frame.src.includes(data.youtubeId)) {
+        frame.src = `https://www.youtube.com/embed/${data.youtubeId}?autoplay=1&mute=1`;
+    }
+  }
+  if(data.videoTitle) {
+    document.getElementById("videoTitle").textContent = data.videoTitle;
+  }
+
+  // 7. 管理員功能
+  if (data.isAdmin) {
+    const editBtn = document.getElementById("adminEditBtn");
+    editBtn.style.display = "inline-block";
+    editBtn.onclick = async () => {
+        const newId = prompt("請輸入新的 YouTube 影片 ID (例如: n28znBIzLCk):", data.youtubeId);
+        if (!newId) return;
+        const newTitle = prompt("請輸入新的直播標題:", data.videoTitle);
+        
+        const result = await callBackend("updateStream", { youtubeId: newId, title: newTitle || "FayWooooo Live" });
+        if (result.success) {
+            alert("更新成功！頁面將重新整理。");
+            window.location.reload();
+        } else {
+            alert("更新失敗: " + (result.error || "未知錯誤"));
+        }
+    };
+  }
+}
+
+function renderMissions(missions) {
+  const container = document.getElementById("missionList");
+  container.innerHTML = "";
+
+  missions.forEach(m => {
+    const percent = Math.min(100, (m.current / m.target) * 100);
+    const isDone = m.completed;
+
+    const html = `
+      <div class="mission-item ${isDone ? 'completed' : ''}">
+        <div class="mission-header">
+          <span class="mission-title">${m.title}</span>
+          <span class="mission-xp">+${m.rewardXP} XP</span>
+        </div>
+        <div class="mission-desc">${m.description}</div>
+        
+        ${isDone ? `
+          <div class="status-text"><i class="fas fa-check-circle"></i> 已完成</div>
+        ` : `
+          <div class="progress-track" style="height:6px; background:rgba(255,255,255,0.1);">
+            <div class="progress-fill" style="width:${percent}%; background:#00d4ff;"></div>
+          </div>
+          <div style="text-align:right; font-size:0.7rem; color:#888; margin-top:2px;">
+            ${m.current} / ${m.target} min
+          </div>
+        `}
+      </div>
+    `;
+    container.innerHTML += html;
+  });
+}
+
+// =======================
+// 初始化與計時器
+// =======================
+async function init() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    alert("請先登入以累積獎勵");
+    window.location.href = "index.html"; 
+    return;
+  }
+
+  // 顯示個資
+  document.getElementById("avatarBtn").src = session.user.user_metadata.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=User";
+
+  // 初始狀態讀取
+  const initData = await callBackend("init");
+  if(!initData.error) updateUI(initData);
+
+  // 啟動心跳 (每 60 秒 Ping 一次)
+  pingInterval = setInterval(async () => {
+    
+    // 🛑 關鍵：如果網頁不可見(掛網/切分頁)，不發送請求
+    if (!isPageVisible) {
+        console.log("😴 掛網中 (Tab inactive)，跳過 Ping");
+        return;
+    }
+
+    const pong = await callBackend("ping");
+    if(!pong.error) updateUI(pong);
+  }, 60000); 
+}
+
+document.addEventListener("DOMContentLoaded", init);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FayWooooo 官方網站</title>
+  <base href="/home">
+  <meta name="description" content="FayWooooo 官方網站，提供每日任務、寶箱兌換、通行券升級及直播觀看等功能，讓你輕鬆獲得 Fay 幣和豐富獎勵！" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="mobile-nav">
+    <a href="index.html"><i class="fas fa-home"></i>首頁</a>
+    <a href="shop.html"><i class="fas fa-store"></i>兌換</a>
+    <a href="live.html"><i class="fas fa-video"></i>直播</a>
+  </div>
+  
+  <header class="topbar">
+    <div class="logo"><i class="fa-solid fa-star"></i> FayWooooo 官方網站 v2.0</div>
+    <nav class="navbar" id="navBar">
+      <a href="index.html"><i class="fas fa-home"></i>首頁</a>
+      <a href="/shop.html"><i class="fa-solid fa-gift"></i> 兌換</a>
+      <a href="/live.html"><i class="fas fa-video"></i> 直播</a>
+    </nav>
+    <div id="userArea">
+      <button id="loginBtn" class="main-btn"><i class="fa-brands fa-google"></i> 使用 Google 登入</button>
+    </div>
+  </header>
+
+  <main>
+    <h1 class="title">歡迎來到<br>官網v2.1</h1>
+    <p>登入後可完成任務、開寶箱、升級通行券！</p>
+
+    <section class="card">
+      <h2><i class="fa-solid fa-star"></i> 官網功能</h2>
+      <p>每日任務：完成任務獲得 Fay 幣</p>
+      <p>寶箱兌換：使用 Fay 幣開啟寶箱獲取獎勵</p>
+      <p>通行券：升級通行券解鎖更多內容</p>
+      <p>直播：觀看直播自動獲得 XP 和 Fay 幣</p>
+    </section>
+
+    <section class="card">
+      <h2><i class="fa-solid fa-chart-line"></i> 頻道數據</h2>
+      <p>訂閱者：超過 1300 人</p>
+      <p>總觀看次數：超過 700,000 次</p>
+      <p>影片數量：150+ 部精彩影片</p>
+      <p>活躍度：不定期更新內容</p>
+    </section>
+
+    <section id="newsSection">
+      <h2><i class="fa-solid fa-bullhorn"></i> 最新公告</h2>
+      <div id="newsList" class="news-list">載入中...</div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 FayWooooo 官方網站 | <a href="https://www.youtube.com/@FayWooooo" target="_blank">YouTube</a></p>
+  </footer>
+
+  <div id="profileMenu" class="profile-menu hidden">
+    <div class="profile-info">
+      <img id="userAvatar" src="" style="border-radius: 50%;" alt="avatar" />
+      <span id="userName"></span>
+    </div>
+    <a href="/shop" style="color: white;text-decoration: none;"><p>Fay幣餘額：<span id="userCoins">--</span></p></a>
+    <div class="menu-buttons">
+      <button id="logoutBtn" class="logout">登出</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/supabase-config.js"></script>
+  <script type="module" src="js/index.js"></script>
+</body>
+</html>
+
