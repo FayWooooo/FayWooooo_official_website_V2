@@ -58,9 +58,23 @@ async function initAdmin() {
 // ❌ 權限不足顯示
 // =====================================
 function showDenied(message) {
-  adminContent.style.display = "none";
-  accessDenied.style.display = "block";
-  accessDenied.textContent = message || "❌ 你沒有管理員權限。";
+  const menu = document.querySelector(".profile-menu");
+  
+  if (menu) {
+    // 1. 加上 unauthorized 類別
+    menu.classList.add("unauthorized");
+    
+    // 2. 設定 CSS 變數訊息
+    menu.style.setProperty("--deny-reason", `"${message}"`);
+  }
+
+  // 同時隱藏後台主內容，避免非管理員直接看到後台數據
+  const adminContent = document.getElementById("adminContent");
+  if (adminContent) {
+    adminContent.innerHTML = `<div style="text-align:center; padding:50px; color:gray;">
+      <i class="fa-solid fa-lock"></i> 頁面已鎖定，請聯繫管理員。
+    </div>`;
+  }
 }
 
 // =====================================
