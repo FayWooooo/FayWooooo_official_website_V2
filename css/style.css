@@ -247,54 +247,8 @@ h1, h2 {
   backdrop-filter: blur(20px);
   transition: 0.3s;
 }
-/* ===== 🚫 Profile Menu 專用阻擋樣式 ===== */
-
-/* 當選單被加上 .unauthorized 時 */
-.profile-menu.unauthorized {
-  /* 確保偽元素定位參考此選單 */
-  position: fixed; 
-  overflow: hidden;
-  border: 1px solid rgba(255, 77, 77, 0.5);
-}
-
-/* 1. 內部遮罩：蓋住原本的 Profile Info 和按鈕 */
-.profile-menu.unauthorized::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(10, 10, 10, 0.9); /* 深色遮罩 */
-  backdrop-filter: blur(8px); /* 模糊選單內容 */
-  z-index: 10;
-}
-
-/* 2. 錯誤訊息：顯示在選單正中央 */
-.profile-menu.unauthorized::after {
-  content: var(--deny-reason, "⚠️ 權限不足");
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 80%;
-  color: #ff4d4d;
-  font-size: 0.95rem;
-  font-weight: bold;
-  text-align: center;
-  z-index: 11;
-  
-  /* 裝飾線條（選擇性，增加質感） */
-  padding: 10px;
-  border: 1px solid rgba(255, 77, 77, 0.3);
-  border-radius: 8px;
-  background: rgba(255, 0, 0, 0.05);
-}
-
-/* 3. 額外保險：讓選單內的按鈕完全無法被點擊 */
-.profile-menu.unauthorized * {
-  pointer-events: none;
-  user-select: none;
+.profile-menu.hidden {
+  display: none;
 }
 .profile-info {
   display: flex;
