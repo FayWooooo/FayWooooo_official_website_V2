@@ -1,41 +1,64 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FayWooooo 官方網站 - 文章專區</title>
-  <base href="/articles">
-  <link rel="stylesheet" href="css/style.css">
-  <meta name="description" content="FayWooooo 官方網站 - 文章專區" />
+  <base href="/" /> <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+
   <style>
-    /* 載入轉圈樣式 */
-    #loader { display: none; text-align: center; padding: 50px; }
-    .spinner {
-      width: 40px; height: 40px; border: 4px solid rgba(255, 0, 255, 0.2);
-      border-top: 4px solid #ff00ff; border-radius: 50%;
-      animation: spin 1s linear infinite; display: inline-block;
+    /* 🛠️ 文章專區專屬微調 (其餘沿用 style.css) */
+    .article-container {
+      width: 90%;
+      max-width: 800px;
+      margin: 20px auto 100px auto;
+      padding: 0 10px;
     }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* 文章佈局 */
-    .article-container { max-width: 800px; margin: 20px auto 100px auto; padding: 20px; }
-    .article-card { cursor: pointer; text-align: left; margin-bottom: 20px; transition: 0.3s; }
-    .article-card:hover { transform: translateY(-5px); border-color: #ff00ff; }
-    
+    /* 玻璃卡片內的文章內容排版 */
+    #artContent {
+      white-space: pre-wrap; 
+      font-size: 1.1rem; 
+      text-align: left; 
+      line-height: 1.8;
+      color: #eee;
+    }
+
+    /* 支援 HTML 渲染後的連結樣式 */
+    #artContent a {
+      color: #ffff00;
+      text-decoration: underline;
+      font-weight: bold;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #ffff00;
+      cursor: pointer;
+      margin-bottom: 20px;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    .back-btn:hover { transform: translateX(-5px); }
+
+    /* 鎖定訊息的玻璃質感 */
     .locked-overlay {
-      background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 10px;
-      border: 1px dashed #ff00ff; margin-top: 20px; text-align: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px dashed rgba(255, 0, 255, 0.5);
+      padding: 30px;
+      border-radius: 20px;
+      margin-top: 30px;
+      backdrop-filter: blur(10px);
     }
-    .back-btn { margin-bottom: 20px; display: inline-block; cursor: pointer; color: #ffff00; }
 
-    /* 管理員新增區域 */
-    #adminSection { 
-      display: none; background: rgba(255, 255, 0, 0.05); 
-      border: 1px solid #ffff00; padding: 20px; border-radius: 15px; margin-bottom: 40px; 
-    }
-    .admin-input { 
-      width: 100%; background: rgba(0,0,0,0.5); border: 1px solid #444; 
-      color: white; padding: 10px; margin-bottom: 10px; border-radius: 5px; 
+    /* 修正手機版文章標題大小 */
+    @media(max-width: 600px) {
+      .title { font-size: 2rem !important; }
+      #artTitle { font-size: 1.4rem !important; }
     }
   </style>
 </head>
@@ -44,60 +67,67 @@
   <header class="topbar">
     <div class="logo"><i class="fa-solid fa-book-open"></i> FayWooooo 文章</div>
     <nav class="navbar">
-        <a href="/home"><i class="fas fa-home"></i>首頁</a>
-        <a href="/shop"><i class="fa-solid fa-gift"></i> 兌換</a>
-        <a href="/live"><i class="fas fa-video"></i> 直播</a>
-        <a href="/articles"><i class="fa-solid fa-book-open"></i>文章專區</a>
+      <a href="index.html"><i class="fas fa-home"></i> 首頁</a>
+      <a href="shop.html"><i class="fa-solid fa-gift"></i> 兌換</a>
+      <a href="live.html"><i class="fas fa-video"></i> 直播</a>
+      <a href="articles.html"><i class="fa-solid fa-book-open"></i> 文章專區</a>
     </nav>
   </header>
 
   <main class="article-container" style="background:none;">
-  
-
-    <div id="loader">
+    
+    <div id="loader" style="display:none;">
       <div class="spinner"></div>
-      <p style="color: #ff00ff; margin-top: 10px;">傳送中...</p>
+      <p style="color: #ff00ff; margin-top: 15px; font-weight: bold;">載入中...</p>
     </div>
-  
+
     <div id="listView">
-      <h2 class="title" style="font-size: 2.5rem;">最新文章</h2>
-      <div id="listContent"></div>
-    </div>
-  
-    <div id="detailView" style="display: none;">
-      <div class="back-btn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i> 返回列表</div>
-      <div class="card" id="articleDetail">
-        <h1 id="artTitle" style="color: #ffff00; font-size: 1.8rem;"></h1>
-        <hr style="border: 0.5px solid rgba(255,255,255,0.1);">
-        <p id="artContent" style="white-space: pre-wrap; font-size: 1.1rem; text-align: left; line-height: 1.6;"></p>
-        <div id="lockMessage" class="locked-overlay" style="display: none;">
-          <p>🔒 剩餘內容僅限會員閱讀</p>
-          <button class="btn" onclick="location.href='login.html'">立即登入</button>
+      <h1 class="title">最新文章</h1>
+      <div id="listContent">
         </div>
+    </div>
+
+    <div id="detailView" style="display: none;">
+      <div class="back-btn" onclick="goHome()">
+        <i class="fa-solid fa-arrow-left"></i> 返回列表
       </div>
+      
+      <article class="card">
+        <h1 id="artTitle" style="color: #ffff00; text-align: left; margin-bottom: 10px;"></h1>
+        <div style="font-size: 0.85rem; color: #888; margin-bottom: 20px;">
+          <i class="fa-regular fa-calendar"></i> <span id="artDate"></span>
+        </div>
+        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin-bottom: 25px;">
+        
+        <div id="artContent"></div>
+
+        <div id="lockMessage" class="locked-overlay" style="display: none;">
+          <p><i class="fa-solid fa-lock"></i> 剩餘精彩內容僅限會員閱讀</p>
+          <button class="main-btn" onclick="location.href='login.html'" style="margin-top: 10px;">
+            立即登入
+          </button>
+        </div>
+      </article>
     </div>
   </main>
 
   <nav class="mobile-nav">
-    <a href="/home"><i class="fas fa-home"></i>首頁</a>
-    <a href="/shop"><i class="fa-solid fa-gift"></i> 兌換</a>
-    <a href="/live"><i class="fas fa-video"></i> 直播</a>
-    <a href="/articles"><i class="fa-solid fa-book-open"></i>文章專區</a>
+    <a href="index.html"><i class="fas fa-home"></i><span>首頁</span></a>
+    <a href="shop.html"><i class="fa-solid fa-gift"></i><span>兌換</span></a>
+    <a href="live.html"><i class="fas fa-video"></i><span>直播</span></a>
+    <a href="articles.html"><i class="fa-solid fa-book-open"></i><span>文章</span></a>
   </nav>
 
   <script type="module">
     import { supabase } from "./js/supabase-config.js";
     
-    // 請確認此 URL 與你的 Edge Function 部署網址一致
     const API_URL = "https://wcqutexugvrgnyusnkpv.supabase.co/functions/v1/articles";
-  
     const loader = document.getElementById("loader");
     const listView = document.getElementById("listView");
     const detailView = document.getElementById("detailView");
-    const adminSection = document.getElementById("adminSection");
     const listContent = document.getElementById("listContent");
-  
-    // --- 1. 核心邏輯：控制顯示狀態 ---
+
+    // --- 狀態管理 ---
     function setLoading(isLoading) {
       loader.style.display = isLoading ? "block" : "none";
       if (isLoading) {
@@ -105,14 +135,14 @@
         detailView.style.display = "none";
       }
     }
-  
-    // --- 2. 核心邏輯：封裝 API 請求 ---
+
+    // --- API 請求 ---
     async function fetchData(action, body = {}) {
       setLoading(true);
       try {
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
-  
+
         const res = await fetch(API_URL, {
           method: "POST",
           headers: { 
@@ -121,104 +151,18 @@
           },
           body: JSON.stringify({ action, ...body })
         });
-  
-        // 如果 API 回傳 401 或其他錯誤，回傳空預設值
-        if (!res.ok) {
-          const errText = await res.text();
-          console.warn(`API 警告 (${res.status}):`, errText);
-          return { articles: [], success: false, fullAccess: false };
-        }
-  
+
+        if (!res.ok) throw new Error("API 請求失敗");
         return await res.json();
       } catch (err) {
-        console.error("網路請求出錯:", err);
+        console.error(err);
         return { articles: [], success: false };
       } finally {
         setLoading(false);
       }
     }
-  
-    // --- 3. 管理員功能 ---
-    async function checkAdmin() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-        
-        const { data: admin, error } = await supabase
-          .from('admin_users')
-          .select('email')
-          .eq('email', user.email)
-          .maybeSingle();
-        
-        if (admin && !error) adminSection.style.display = "block";
-      } catch (e) {
-        console.log("非管理員身分或 admin_users 表不存在");
-      }
-    }
-  
-window.publishArticle = async () => {
-  const title = document.getElementById("newTitle").value.trim();
-  const summary = document.getElementById("newSummary").value.trim();
-  const content = document.getElementById("newContent").value.trim();
 
-  if(!title || !content) return alert("請填寫標題與內容");
-
-  setLoading(true);
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    const user = session?.user;
-    const token = session?.access_token;
-
-    // 呼叫 admin Edge Function
-    const res = await fetch("https://wcqutexugvrgnyusnkpv.supabase.co/functions/v1/admin?action=addArticle", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        email: user.email, // 管理員自己的 Email，用於後端 verifyAdmin
-        title,
-        summary,
-        content
-      })
-    });
-
-    const result = await res.json();
-    if (result.success) {
-      alert("✅ 文章發布成功！");
-      location.reload();
-    } else {
-      alert("❌ 發布失敗：" + (result.error || "未知錯誤"));
-    }
-  } catch (err) {
-    console.error(err);
-    alert("⚠️ 系統連線失敗");
-  } finally {
-    setLoading(false);
-  }
-};
-  
-    // --- 4. 路由與網址處理 ---
-    function getArticleIdFromURL() {
-      const path = window.location.pathname;
-      // 假設路徑格式為 /articles/123 或 /articles.html/123
-      const parts = path.split('/').filter(p => p); 
-      const lastPart = parts[parts.length - 1];
-      
-      // 如果最後一段不是 articles 且不是 articles.html，則視為 ID
-      if (lastPart && !lastPart.includes('articles')) {
-        return lastPart;
-      }
-      return null;
-    }
-  
-    function updateURL(id = null) {
-      const newPath = id ? `/articles/${id}` : `/articles`;
-      window.history.pushState({ id }, "", newPath);
-    }
-  
-    // --- 5. 視圖載入邏輯 ---
+    // --- 文章列表渲染 ---
     async function loadArticles() {
       const res = await fetchData("listArticles");
       listView.style.display = "block";
@@ -227,56 +171,62 @@ window.publishArticle = async () => {
         listContent.innerHTML = `<p style="color: #888; padding: 20px;">尚無文章內容</p>`;
         return;
       }
-  
+
+      // 使用你 CSS 內的 .card 與 .article-card 組合
       listContent.innerHTML = res.articles.map(art => `
         <div class="card article-card" onclick="goToArticle('${art.id}')">
           <h3 style="margin:0; color:#ffff00;">${art.title}</h3>
-          <p style="font-size:0.9rem; color:#ccc; margin: 10px 0;">${art.summary || '點擊閱讀更多...'}</p>
-          <small style="color: #666;"><i class="fa-regular fa-calendar"></i> ${new Date(art.created_at).toLocaleDateString()}</small>
+          <p style="font-size:0.95rem; color:#ccc; margin: 12px 0;">${art.summary || '點擊閱讀全文...'}</p>
+          <div style="font-size: 0.8rem; color: #666;">
+            <i class="fa-regular fa-calendar"></i> ${new Date(art.created_at).toLocaleDateString()}
+          </div>
         </div>
       `).join('');
     }
-  
+
+    // --- 文章詳情渲染 ---
     async function loadDetail(id) {
       const res = await fetchData("getArticle", { articleId: id });
       if (!res || !res.success) {
-        alert(res?.error || "無法載入文章");
+        alert("無法載入文章");
         goHome();
         return;
       }
-  
+
       detailView.style.display = "block";
       document.getElementById("artTitle").innerText = res.article.title;
-      document.getElementById("artContent").innerText = res.article.content;
+      document.getElementById("artDate").innerText = new Date(res.article.created_at).toLocaleDateString();
       
-      // 根據後端回傳的 fullAccess 決定是否顯示「登入鎖」
+      // ✅ 關鍵：使用 innerHTML 支援超連結渲染
+      document.getElementById("artContent").innerHTML = res.article.content; 
+
+      // 登入鎖顯示邏輯
       document.getElementById("lockMessage").style.display = res.fullAccess ? "none" : "block";
     }
-  
-    // --- 6. 全域導航函數 ---
+
+    // --- 路由處理 ---
     window.goToArticle = (id) => {
-      updateURL(id);
+      window.history.pushState({ id }, "", `/articles/${id}`);
       loadDetail(id);
     };
-  
+
     window.goHome = () => {
-      updateURL(null);
+      window.history.pushState({}, "", "/articles");
       loadArticles();
     };
-  
+
     window.onpopstate = () => router();
-  
+
     async function router() {
-      const id = getArticleIdFromURL();
-      if (id) {
+      const path = window.location.pathname;
+      const id = path.split('/').filter(p => p && p !== 'articles').pop();
+      if (id && id !== 'articles.html') {
         await loadDetail(id);
       } else {
         await loadArticles();
       }
     }
-  
-    // 啟動
-    checkAdmin();
+
     router();
   </script>
 </body>
