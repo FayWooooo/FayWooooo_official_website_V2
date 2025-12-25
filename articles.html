@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FayWooooo 官方網站 - 文章專區</title>
+  <meta name="description" content="FayWooooo 官方網站的文章專區，提供最新文章與資訊，讓你掌握第一手消息！" />
   <base href="/" /> <link rel="stylesheet" href="css/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
@@ -102,6 +103,7 @@
         <div id="artContent"></div>
 
         <div id="lockMessage" class="locked-overlay" style="display: none;">
+  </div>
           <p><i class="fa-solid fa-lock"></i> 剩餘精彩內容僅限會員閱讀</p>
           <button class="main-btn" onclick="location.href='login.html'" style="margin-top: 10px;">
             立即登入
@@ -185,24 +187,25 @@
     }
 
     // --- 文章詳情渲染 ---
-    async function loadDetail(id) {
-      const res = await fetchData("getArticle", { articleId: id });
-      if (!res || !res.success) {
-        alert("無法載入文章");
-        goHome();
-        return;
-      }
+   async function loadDetail(id) {
+  const res = await fetchData("getArticle", { articleId: id });
+  if (!res || !res.success) {
+    alert(res?.error || "無法載入文章");
+    goHome();
+    return;
+  }
 
-      detailView.style.display = "block";
-      document.getElementById("artTitle").innerText = res.article.title;
-      document.getElementById("artDate").innerText = new Date(res.article.created_at).toLocaleDateString();
-      
-      // ✅ 關鍵：使用 innerHTML 支援超連結渲染
-      document.getElementById("artContent").innerHTML = res.article.content; 
+  detailView.style.display = "block";
+  document.getElementById("artTitle").innerText = res.article.title;
+  document.getElementById("artDate").innerText = new Date(res.article.created_at).toLocaleDateString();
+  
+  // ✅ 直接渲染全部內容
+  const contentEl = document.getElementById("artContent");
+  contentEl.innerHTML = res.article.content; 
 
-      // 登入鎖顯示邏輯
-      document.getElementById("lockMessage").style.display = res.fullAccess ? "none" : "block";
-    }
+  // ✅ 永遠隱藏登入鎖
+  document.getElementById("lockMessage").style.display = "none";
+}
 
     // --- 路由處理 ---
     window.goToArticle = (id) => {
