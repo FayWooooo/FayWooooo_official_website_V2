@@ -57,7 +57,17 @@
         <input type="number" id="rewardPrice" placeholder="價格（Fay幣）" />
         <button id="addReward" class="main-btn" style="margin-top:10px;">新增獎勵</button>
       </div>
-
+      <div class="card">
+        <h2><i class="fa-solid fa-file-pen"></i> 發布新文章</h2>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <input type="text" id="artTitle" placeholder="文章標題" />
+          <textarea id="artSummary" placeholder="文章摘要 (建議 50 字內)" style="height: 60px;"></textarea>
+          <textarea id="artContent" placeholder="文章完整內容 (登入後可見)" style="height: 150px;"></textarea>
+          <button id="publishArticle" class="main-btn">
+            <i class="fa-solid fa-upload"></i> 發布文章到專區
+          </button>
+        </div>
+      </div>
       <!-- 通知系統 -->
       <div class="card">
         <h2><i class="fa-solid fa-bell"></i> 系統通知</h2>

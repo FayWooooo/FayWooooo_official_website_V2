@@ -6,11 +6,7 @@
       { "source": "/pass", "destination": "/pass.html" },
       { "source": "/live", "destination": "/live.html" },
       { "source": "/voucher", "destination": "/voucher.html" },
-      { "source": "/chat", "destination": "/chat.html" }
+      { "source": "/chat", "destination": "/chat.html" },
+      { "source": "/articles/:id", "destination": "/articles.html" }
     ]
   }
-  
-
-
-
-
