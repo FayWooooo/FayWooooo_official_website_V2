@@ -80,18 +80,73 @@ function showDenied(message) {
 // =====================================
 // ⚙️ 綁定按鈕事件
 // =====================================
+// ✅ 找到 setupActions 函數並修改如下：
 function setupActions(adminEmail, token) {
   const addCoin = document.getElementById("addCoin");
   const reduceCoin = document.getElementById("reduceCoin");
   const resetCoin = document.getElementById("resetCoin");
   const publishNewsBtn = document.getElementById("publishNews");
   const addRewardBtn = document.getElementById("addReward");
+  
+  // 新增：文章發布按鈕
+  const publishArticleBtn = document.getElementById("publishArticle");
 
   if (addCoin) addCoin.addEventListener("click", () => handleCoinOperation(adminEmail, token, "add"));
   if (reduceCoin) reduceCoin.addEventListener("click", () => handleCoinOperation(adminEmail, token, "subtract"));
   if (resetCoin) resetCoin.addEventListener("click", () => handleCoinOperation(adminEmail, token, "setZero"));
   if (publishNewsBtn) publishNewsBtn.addEventListener("click", () => publishNews(adminEmail, token));
   if (addRewardBtn) addRewardBtn.addEventListener("click", () => addReward(adminEmail, token));
+  
+  // ✅ 修正：只有當按鈕存在時才綁定，並傳入正確的參數
+  if (publishArticleBtn) {
+    publishArticleBtn.onclick = () => handlePublishArticle(adminEmail, token);
+  }
+}
+
+// ✅ 新增專門處理文章發布的函數 (放在 admin.js 下方)
+async function handlePublishArticle(adminEmail, token) {
+  const title = document.getElementById("artTitle").value.trim();
+  const summary = document.getElementById("artSummary").value.trim();
+  const content = document.getElementById("artContent").value.trim();
+  const btn = document.getElementById("publishArticle");
+
+  if (!title || !content) return alert("❌ 請填寫標題與內容！");
+
+  try {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 發布中...`;
+
+    const res = await fetch(baseUrl + "?action=addArticle", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        email: adminEmail, 
+        title,
+        summary,
+        content
+      }),
+    });
+
+    const result = await res.json();
+    if (result.success) {
+      alert("✅ 文章已成功發布至專區！");
+      document.getElementById("artTitle").value = "";
+      document.getElementById("artSummary").value = "";
+      document.getElementById("artContent").value = "";
+      await loadNotifications(adminEmail, token);
+    } else {
+      alert("❌ 發布失敗：" + (result.error || "未知錯誤"));
+    }
+  } catch (err) {
+    console.error("Article Publish Error:", err);
+    alert("⚠️ 連線伺服器失敗");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fa-solid fa-upload"></i> 發布文章到專區`;
+  }
 }
 
 // =====================================
@@ -159,7 +214,57 @@ async function publishNews(email, token) {
   alert(result.success ? "✅ 公告已發布" : `❌ 發布失敗：${result.error}`);
   await loadNotifications(email, token);
 }
+// ✅ 在 admin.js 中找到合適位置加入監聽器
+document.getElementById("publishArticle").onclick = async () => {
+  const title = document.getElementById("artTitle").value.trim();
+  const summary = document.getElementById("artSummary").value.trim();
+  const content = document.getElementById("artContent").value.trim();
+  const btn = document.getElementById("publishArticle");
 
+  if (!title || !content) return alert("❌ 請填寫標題與內容！");
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
+    const token = session?.access_token;
+
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 發布中...`;
+
+    const res = await fetch(baseUrl + "?action=addArticle", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        email: user.email, // 用於後端 verifyAdmin
+        title,
+        summary,
+        content
+      }),
+    });
+
+    const result = await res.json();
+    if (result.success) {
+      alert("✅ 文章已成功發布至專區！");
+      // 清空表格
+      document.getElementById("artTitle").value = "";
+      document.getElementById("artSummary").value = "";
+      document.getElementById("artContent").value = "";
+      // 重新整理通知清單（如果有實作的話）
+      if (typeof loadNotifications === "function") loadNotifications();
+    } else {
+      alert("❌ 發布失敗：" + (result.error || "未知錯誤"));
+    }
+  } catch (err) {
+    console.error("Article Publish Error:", err);
+    alert("⚠️ 連線伺服器失敗");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fa-solid fa-upload"></i> 發布文章到專區`;
+  }
+};
 // =====================================
 // 🏆 新增獎勵
 // =====================================
