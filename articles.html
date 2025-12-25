@@ -122,36 +122,36 @@
 
     // --- 核心修改：API 請求與 401 攔截 ---
     async function fetchData(action, body = {}) {
-        setLoading(true);
-        try {
-            const { data } = await supabase.auth.getSession();
-            const token = data?.session?.access_token;
+    setLoading(true);
+    try {
+        const { data } = await supabase.auth.getSession();
+        const token = data?.session?.access_token;
 
-            const headers = { "Content-Type": "application/json" };
-            if (token) headers["Authorization"] = `Bearer ${token}`;
+        const res = await fetch(API_URL, { // 網址不要帶 ?action= 了，全部走 Body
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": token ? `Bearer ${token}` : ""
+            },
+            body: JSON.stringify({ action, ...body }) // 確保 action 在這裡
+        });
 
-            const res = await fetch(`${API_URL}?action=${action}`, {
-                method: "POST",
-                headers: headers,
-                body: JSON.stringify(body)
-            });
-
-            // 🎯 這裡觸發：只要 API 回傳 401 (Unauthorized)
-            if (res.status === 401) {
-                alert("請先登入後再閱讀文章！");
-                window.location.href = "index.html"; 
-                return null;
-            }
-
-            if (!res.ok) throw new Error(`伺服器回應錯誤: ${res.status}`);
-            return await res.json();
-        } catch (err) {
-            console.error("API 請求發生錯誤:", err.message);
-            return { articles: [], success: false };
-        } finally {
-            setLoading(false);
+        if (res.status === 401) {
+            alert("請先登入後再閱讀文章！");
+            window.location.href = "index.html";
+            return null;
         }
+
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || "請求失敗");
+        return result;
+    } catch (err) {
+        console.error("API 請求發生錯誤:", err.message);
+        return { articles: [], success: false };
+    } finally {
+        setLoading(false);
     }
+}
 
     // --- 載入列表 ---
     async function loadArticles() {
