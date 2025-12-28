@@ -6,8 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>領取 Fay 幣兌換券</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
-  <script src="/js/supabase-config.js"></script>
+  <script type="module" src="/js/supabase-config.js"></script>
 
   <style>
     body {
@@ -63,6 +62,12 @@
       box-shadow: 0 0 12px rgba(255, 183, 0, 0.5);
     }
 
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
+      transform: none;
+    }
+
     .success { color: #4ef04e; font-weight: bold; }
     .error { color: #ff4444; font-weight: bold; }
     .loading { font-size: 1.1rem; opacity: 0.8; animation: blink 1.4s infinite; }
@@ -92,8 +97,11 @@
     <a href="/home">🏠 回首頁</a>
   </div>
 
- <script type="module">
-    // 🔍 取得代碼邏輯 (保持之前優化的版本)
+  <script type="module">
+    const msg = document.getElementById("msg");
+    const claimBtn = document.getElementById("claimBtn");
+
+    // 🔍 取得代碼邏輯
     function getVoucherCode() {
       const urlParams = new URLSearchParams(window.location.search);
       const codeFromQuery = urlParams.get("code");
@@ -107,47 +115,53 @@
     }
 
     const code = getVoucherCode();
-    const msg = document.getElementById("msg");
-    const claimBtn = document.getElementById("claimBtn");
 
     if (!code) {
       msg.textContent = "❌ 找不到代碼";
       msg.className = "error";
     } else {
       msg.textContent = `代碼：${code}`;
-      // 等待 DOM 和 Config 加載完成
-      setTimeout(init, 500); 
+      // 開始循環檢查 Supabase 是否載入完成
+      checkAndInit();
+    }
+
+    function checkAndInit() {
+      if (window.supabase) {
+        console.log("✅ Supabase 已就緒");
+        init();
+      } else {
+        console.log("⏳ 等待 Supabase 初始化...");
+        setTimeout(checkAndInit, 100); // 每 0.1 秒檢查一次
+      }
     }
 
     async function init() {
-      // ✅ 從 window 取得已初始化的 supabase
       const client = window.supabase;
 
-      if (!client) {
-        msg.textContent = "系統初始化中，請稍候...";
-        // 如果還沒載入，過一秒再試一次
-        setTimeout(init, 1000);
-        return;
-      }
-
       try {
+        // 使用 getSession 快速檢查登入狀態
         const { data: { session } } = await client.auth.getSession();
         const user = session?.user;
 
         if (!user) {
-          msg.innerHTML = "請先登入帳號再領取。";
+          msg.innerHTML = "請先登入帳號再領取。<br><a href='/home' style='color:#ffb700; text-decoration:underline;'>點此去登入</a>";
+          msg.className = "error";
           claimBtn.style.display = "none";
           return;
         }
 
+        // ✅ 確定有登入且有代碼，顯示按鈕
+        msg.textContent = `代碼：${code}`;
+        msg.className = ""; // 移除 loading 效果
         claimBtn.style.display = "inline-block";
+
         claimBtn.onclick = async () => {
           claimBtn.disabled = true;
           msg.textContent = "兌換中...";
           msg.className = "loading";
 
           try {
-            // 注意：這裡的路徑改回你正確的 Function 名稱
+            // 這裡發送到你的 Edge Function
             const resp = await fetch("https://wcqutexugvrgnyusnkpv.supabase.co/functions/v1/generate_vouchers", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -155,23 +169,27 @@
             });
 
             const data = await resp.json();
+
             if (data.success) {
               msg.innerHTML = `🎉 <span class="success">成功領取 ${data.added} Fay 幣！</span><br>目前餘額：${data.newCoins} Fay 幣`;
               msg.className = "success";
               claimBtn.style.display = "none";
             } else {
+              // 處理各種錯誤（如已被領取、領取過等）
               msg.innerHTML = "❌ " + (data.error || "兌換失敗");
               msg.className = "error";
               claimBtn.disabled = false;
             }
           } catch (e) {
-            msg.textContent = "伺服器錯誤，請稍後再試。";
+            console.error(e);
+            msg.textContent = "伺服器連線失敗，請檢查網路。";
             msg.className = "error";
             claimBtn.disabled = false;
           }
         };
       } catch (err) {
         console.error("Init Error:", err);
+        msg.textContent = "系統初始化錯誤";
       }
     }
   </script>
