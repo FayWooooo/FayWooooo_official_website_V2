@@ -92,88 +92,101 @@
     <a href="/home">🏠 回首頁</a>
   </div>
 
-  <script type="module">
-    // 🔍 取得代碼邏輯 (保持之前優化的版本)
-    function getVoucherCode() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const codeFromQuery = urlParams.get("code");
-      if (codeFromQuery) return codeFromQuery;
+ <script type="module">
+  const msg = document.getElementById("msg");
+  const claimBtn = document.getElementById("claimBtn");
 
-      const pathParts = window.location.pathname.split("/").filter(p => p !== "");
-      if (pathParts.length >= 2 && pathParts[0] === "voucher") {
-        return pathParts[1];
-      }
-      return null;
+  // 1. 取得代碼
+  function getVoucherCode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const codeFromQuery = urlParams.get("code");
+    if (codeFromQuery) return codeFromQuery;
+
+    const pathParts = window.location.pathname.split("/").filter(p => p !== "");
+    if (pathParts.length >= 2 && pathParts[0] === "voucher") {
+      return pathParts[1];
     }
+    return null;
+  }
 
-    const code = getVoucherCode();
-    const msg = document.getElementById("msg");
-    const claimBtn = document.getElementById("claimBtn");
+  const code = getVoucherCode();
 
-    if (!code) {
-      msg.textContent = "❌ 找不到代碼";
-      msg.className = "error";
+  if (!code) {
+    msg.textContent = "❌ 找不到代碼";
+    msg.className = "error";
+  } else {
+    msg.textContent = `代碼：${code}`;
+    checkSupabaseReady(); // 開始檢查環境
+  }
+
+  // 2. 核心修正：確保 supabase 載入後才執行 init
+  function checkSupabaseReady() {
+    if (window.supabase) {
+      console.log("✅ Supabase 已就緒，啟動初始化...");
+      init();
     } else {
-      msg.textContent = `代碼：${code}`;
-      // 等待 DOM 和 Config 加載完成
-      setTimeout(init, 500); 
+      console.log("⏳ 等待 Supabase 初始化中...");
+      // 每 100ms 檢查一次，直到 window.supabase 出現
+      setTimeout(checkSupabaseReady, 100);
     }
+  }
 
-    async function init() {
-      // ✅ 從 window 取得已初始化的 supabase
+  async function init() {
+    try {
       const client = window.supabase;
+      
+      // 取得 Session
+      const { data: { session }, error: sessionError } = await client.auth.getSession();
+      
+      if (sessionError) throw sessionError;
 
-      if (!client) {
-        msg.textContent = "系統初始化中，請稍候...";
-        // 如果還沒載入，過一秒再試一次
-        setTimeout(init, 1000);
+      if (!session || !session.user) {
+        msg.innerHTML = "請先登入帳號再領取。<br><a href='/home' style='color:#ffb700'>前往登入</a>";
+        msg.className = "";
         return;
       }
 
-      try {
-        const { data: { session } } = await client.auth.getSession();
-        const user = session?.user;
+      const user = session.user;
+      console.log("👤 使用者已登入:", user.id);
 
-        if (!user) {
-          msg.innerHTML = "請先登入帳號再領取。";
-          claimBtn.style.display = "none";
-          return;
-        }
+      // ✅ 只有到這一步才會顯示按鈕
+      msg.textContent = `代碼：${code} (已準備就緒)`;
+      msg.className = ""; // 移除 loading 動畫
+      claimBtn.style.display = "inline-block";
 
-        claimBtn.style.display = "inline-block";
-        claimBtn.onclick = async () => {
-          claimBtn.disabled = true;
-          msg.textContent = "兌換中...";
-          msg.className = "loading";
+      claimBtn.onclick = async () => {
+        claimBtn.disabled = true;
+        msg.textContent = "兌換中...";
+        msg.className = "loading";
 
-          try {
-            // 注意：這裡的路徑改回你正確的 Function 名稱
-            const resp = await fetch("https://wcqutexugvrgnyusnkpv.supabase.co/functions/v1/generate_vouchers", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ code, user_id: user.id }),
-            });
+        try {
+          const resp = await fetch("https://wcqutexugvrgnyusnkpv.supabase.co/functions/v1/generate_vouchers", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code, user_id: user.id }),
+          });
 
-            const data = await resp.json();
-            if (data.success) {
-              msg.innerHTML = `🎉 <span class="success">成功領取 ${data.added} Fay 幣！</span><br>目前餘額：${data.newCoins} Fay 幣`;
-              msg.className = "success";
-              claimBtn.style.display = "none";
-            } else {
-              msg.innerHTML = "❌ " + (data.error || "兌換失敗");
-              msg.className = "error";
-              claimBtn.disabled = false;
-            }
-          } catch (e) {
-            msg.textContent = "伺服器錯誤，請稍後再試。";
+          const data = await resp.json();
+          if (data.success) {
+            msg.innerHTML = `🎉 <span class="success">成功領取 ${data.added} Fay 幣！</span><br>目前餘額：${data.newCoins} Fay 幣`;
+            msg.className = "success";
+            claimBtn.style.display = "none";
+          } else {
+            msg.innerHTML = "❌ " + (data.error || "兌換失敗");
             msg.className = "error";
             claimBtn.disabled = false;
           }
-        };
-      } catch (err) {
-        console.error("Init Error:", err);
-      }
+        } catch (e) {
+          msg.textContent = "伺服器錯誤，請稍後再試。";
+          msg.className = "error";
+          claimBtn.disabled = false;
+        }
+      };
+    } catch (err) {
+      console.error("❌ Init 過程出錯:", err);
+      msg.textContent = "系統載入失敗，請重新整理。";
     }
-  </script>
+  }
+</script>
 </body>
 </html>
