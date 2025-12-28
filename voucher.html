@@ -2,13 +2,11 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <base href="/voucher">
+  <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>領取 Fay 幣兌換券</title>
 
-  <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
-  <!-- 匯入全站設定 -->
   <script src="/js/supabase-config.js"></script>
 
   <style>
@@ -98,9 +96,26 @@
     const msg = document.getElementById("msg");
     const claimBtn = document.getElementById("claimBtn");
 
-    // 🔍 取得網址代碼 (支援 /voucher/[code] 或 ?code=)
-    const pathParts = window.location.pathname.split("/");
-    let code = pathParts[pathParts.length - 1] || new URLSearchParams(window.location.search).get("code");
+    // 🔍 修正後的代碼取得邏輯
+    function getVoucherCode() {
+      // 1. 先從網址參數 ?code= 找
+      const urlParams = new URLSearchParams(window.location.search);
+      const codeFromQuery = urlParams.get("code");
+      if (codeFromQuery) return codeFromQuery;
+
+      // 2. 從路徑 /voucher/[代碼] 找
+      // 例如：/voucher/8801EC0E -> split 後得到 ["", "voucher", "8801EC0E"]
+      const pathParts = window.location.pathname.split("/").filter(p => p !== "");
+      
+      // 確保第一段是 voucher 且有第二段存在
+      if (pathParts.length >= 2 && pathParts[0] === "voucher") {
+        return pathParts[1];
+      }
+      
+      return null;
+    }
+
+    const code = getVoucherCode();
 
     if (!code) {
       msg.textContent = "❌ 找不到代碼";
@@ -111,6 +126,12 @@
     }
 
     async function init() {
+      // 確保已載入 supabase
+      if (typeof supabase === 'undefined') {
+        msg.textContent = "系統載入錯誤，請重新整理。";
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         msg.innerHTML = "請先登入帳號再領取。";
@@ -126,7 +147,8 @@
         msg.className = "loading";
 
         try {
-          const resp = await fetch("https://YOUR_PROJECT.functions.supabase.co/redeem-voucher", {
+          // 請確認此 URL 是否為您佈署後的 Edge Function URL
+          const resp = await fetch("https://wcqutexugvrgnyusnkpv.supabase.co/functions/v1/generate_vouchers", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ code, user_id: user.id }),
