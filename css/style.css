@@ -504,3 +504,80 @@ body::after {
  font-size: 0.75rem;
 }
 }
+/* 載入轉圈動畫 */
+#loader {
+  display: none;
+  text-align: center;
+  padding: 50px;
+}
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255, 0, 255, 0.2);
+  border-top: 5px solid #ff00ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 優化卡片間距 */
+.article-card { margin-bottom: 20px; transition: 0.3s; }
+.article-card:hover { transform: translateY(-5px); border-color: #ff00ff; }
+
+/* 連鎖禮包專用 UI */
+.chain-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 600px;
+  margin: 30px auto;
+  position: relative;
+}
+
+.chain-item {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px 20px;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: 0.3s;
+  position: relative;
+}
+
+.chain-item.unlocked {
+  border-color: #ff00ff;
+  background: rgba(255, 0, 255, 0.1);
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.2);
+}
+
+.chain-item.claimed {
+  opacity: 0.6;
+  background: rgba(0, 255, 0, 0.05);
+  border-color: #00ff88;
+}
+
+.chain-item.locked {
+  filter: grayscale(1);
+  cursor: not-allowed;
+}
+
+.chain-step {
+  width: 40px;
+  height: 40px;
+  background: #333;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  margin-right: 20px;
+}
+
+.unlocked .chain-step { background: linear-gradient(45deg, #ff00ff, #ffff00); color: #000; }
+
+.chain-info { flex-grow: 1; text-align: left; }
