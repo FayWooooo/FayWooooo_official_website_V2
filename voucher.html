@@ -136,62 +136,71 @@
     }
 
     async function init() {
-      const client = window.supabase;
+  const client = window.supabase;
+
+  try {
+    // 1. 取得當前的 Session
+    const { data: { session }, error: sessionError } = await client.auth.getSession();
+    
+    if (sessionError || !session) {
+      msg.innerHTML = "請先登入帳號再領取。<br><a href='/home' style='color:#ffb700; text-decoration:underline;'>點此去登入</a>";
+      msg.className = "error";
+      claimBtn.style.display = "none";
+      return;
+    }
+
+    const user = session.user;
+    const token = session.access_token; // 🔑 取得對應的 Token
+
+    // 2. 確定有登入，顯示按鈕
+    msg.textContent = `代碼：${code}`;
+    msg.className = ""; 
+    claimBtn.style.display = "inline-block";
+
+    claimBtn.onclick = async () => {
+      claimBtn.disabled = true;
+      msg.textContent = "兌換中...";
+      msg.className = "loading";
 
       try {
-        // 使用 getSession 快速檢查登入狀態
-        const { data: { session } } = await client.auth.getSession();
-        const user = session?.user;
+        // 3. 發送請求，並在 Headers 加入 Authorization
+        const resp = await fetch("https://wcqutexugvrgnyusnkpv.supabase.co/functions/v1/generate_vouchers", {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}` // ✅ 將 Token 放入標頭
+          },
+          body: JSON.stringify({ code, user_id: user.id }),
+        });
 
-        if (!user) {
-          msg.innerHTML = "請先登入帳號再領取。<br><a href='/home' style='color:#ffb700; text-decoration:underline;'>點此去登入</a>";
-          msg.className = "error";
-          claimBtn.style.display = "none";
-          return;
+        // 檢查 HTTP 狀態碼
+        if (resp.status === 401) {
+          throw new Error("認證失效，請重新登入");
         }
 
-        // ✅ 確定有登入且有代碼，顯示按鈕
-        msg.textContent = `代碼：${code}`;
-        msg.className = ""; // 移除 loading 效果
-        claimBtn.style.display = "inline-block";
+        const data = await resp.json();
 
-        claimBtn.onclick = async () => {
-          claimBtn.disabled = true;
-          msg.textContent = "兌換中...";
-          msg.className = "loading";
-
-          try {
-            // 這裡發送到你的 Edge Function
-            const resp = await fetch("https://wcqutexugvrgnyusnkpv.supabase.co/functions/v1/generate_vouchers", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ code, user_id: user.id }),
-            });
-
-            const data = await resp.json();
-
-            if (data.success) {
-              msg.innerHTML = `🎉 <span class="success">成功領取 ${data.added} Fay 幣！</span><br>目前餘額：${data.newCoins} Fay 幣`;
-              msg.className = "success";
-              claimBtn.style.display = "none";
-            } else {
-              // 處理各種錯誤（如已被領取、領取過等）
-              msg.innerHTML = "❌ " + (data.error || "兌換失敗");
-              msg.className = "error";
-              claimBtn.disabled = false;
-            }
-          } catch (e) {
-            console.error(e);
-            msg.textContent = "伺服器連線失敗，請檢查網路。";
-            msg.className = "error";
-            claimBtn.disabled = false;
-          }
-        };
-      } catch (err) {
-        console.error("Init Error:", err);
-        msg.textContent = "系統初始化錯誤";
+        if (data.success) {
+          msg.innerHTML = `🎉 <span class="success">成功領取 ${data.added} Fay 幣！</span><br>目前餘額：${data.newCoins} Fay 幣`;
+          msg.className = "success";
+          claimBtn.style.display = "none";
+        } else {
+          msg.innerHTML = "❌ " + (data.error || "兌換失敗");
+          msg.className = "error";
+          claimBtn.disabled = false;
+        }
+      } catch (e) {
+        console.error("Fetch Error:", e);
+        msg.textContent = e.message || "伺服器連線失敗";
+        msg.className = "error";
+        claimBtn.disabled = false;
       }
-    }
+    };
+  } catch (err) {
+    console.error("Init Error:", err);
+    msg.textContent = "系統初始化錯誤";
+  }
+}
   </script>
 </body>
 </html>
