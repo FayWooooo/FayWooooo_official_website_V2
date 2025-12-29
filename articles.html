@@ -193,7 +193,7 @@
     }
 
     window.goToArticle = (id) => {
-        window.history.pushState({ id }, "", `articles.html?id=${id}`);
+        window.history.pushState({ id }, "", `articles.html/${id}`);
         loadDetail(id);
     };
 
