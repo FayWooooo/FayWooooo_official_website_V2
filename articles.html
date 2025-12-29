@@ -193,7 +193,7 @@
     }
 
     window.goToArticle = (id) => {
-        window.history.pushState({ id }, "", `articles.html/${id}`);
+        window.history.pushState({ id }, "", `articles/${id}`);
         loadDetail(id);
     };
 
@@ -218,3 +218,4 @@
 </script>
 </body>
 </html>
+
