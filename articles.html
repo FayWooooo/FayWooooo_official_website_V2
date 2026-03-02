@@ -3,60 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FayWooooo 官方網站 - 文章專區</title>
+  <title>文章 | FayWooooo 3.0</title>
   <meta name="description" content="FayWooooo 官方網站的文章專區，提供最新文章與資訊！" />
   <link rel="icon" href="logo.ico">
   <base href="/articles" /> 
   <link rel="stylesheet" href="css/style.css" />
+  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
-
-  <style>
-    .article-container {
-      width: 90%;
-      max-width: 800px;
-      margin: 20px auto 100px auto;
-      padding: 0 10px;
-    }
-    #artContent {
-      white-space: pre-wrap; 
-      font-size: 1.1rem; 
-      text-align: left; 
-      line-height: 1.8;
-      color: #eee;
-    }
-    #artContent a {
-      color: #ffff00;
-      text-decoration: underline;
-      font-weight: bold;
-    }
-    .back-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: #ffff00;
-      cursor: pointer;
-      margin-bottom: 20px;
-      font-weight: bold;
-      transition: 0.3s;
-    }
-    .back-btn:hover { transform: translateX(-5px); }
-    
-    @media(max-width: 600px) {
-      .title { font-size: 2rem !important; }
-      #artTitle { font-size: 1.4rem !important; }
-    }
-  </style>
 </head>
 <body>
 
   <header class="topbar">
-    <div class="logo"><i class="fa-solid fa-book-open"></i> FayWooooo 文章</div>
-    <nav class="navbar">
-      <a href="index.html"><i class="fas fa-home"></i> 首頁</a>
-      <a href="shop.html"><i class="fa-solid fa-gift"></i> 兌換</a>
-      <a href="live.html"><i class="fas fa-video"></i> 直播</a>
-      <a href="articles.html"><i class="fa-solid fa-book-open"></i> 文章專區</a>
+    <div class="logo"><i class="fa-solid fa-book-open"></i> 文章</div>
+    <nav class="navbar-center">
+      <a href="index.html"></i>首頁</a>
+      <a href="shop.html">兌換</a>
+      <a href="articles.html" class="active">文章</a>
     </nav>
   </header>
 
@@ -100,122 +63,9 @@
     <a href="index.html"><i class="fas fa-home"></i><span>首頁</span></a>
     <a href="shop.html"><i class="fa-solid fa-gift"></i><span>兌換</span></a>
     <a href="live.html"><i class="fas fa-video"></i><span>直播</span></a>
-    <a href="articles.html"><i class="fa-solid fa-book-open"></i><span>文章</span></a>
+    <a href="articles.html" class="active"><i class="fa-solid fa-book-open"></i><span>文章</span></a>
   </nav>
 
-  <script type="module">
-    import { supabase } from "./js/supabase-config.js";
-    
-    const API_URL = "https://wcqutexugvrgnyusnkpv.supabase.co/functions/v1/articles";
-    const loader = document.getElementById("loader");
-    const listView = document.getElementById("listView");
-    const detailView = document.getElementById("detailView");
-    const listContent = document.getElementById("listContent");
-
-    function setLoading(isLoading) {
-        loader.style.display = isLoading ? "block" : "none";
-        if (isLoading) {
-            listView.style.display = "none";
-            detailView.style.display = "none";
-        }
-    }
-
-    // --- 核心修改：API 請求與 401 攔截 ---
-    async function fetchData(action, body = {}) {
-    setLoading(true);
-    try {
-        const { data } = await supabase.auth.getSession();
-        const token = data?.session?.access_token;
-
-        const res = await fetch(API_URL, { // 網址不要帶 ?action= 了，全部走 Body
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-                "Authorization": token ? `Bearer ${token}` : ""
-            },
-            body: JSON.stringify({ action, ...body }) // 確保 action 在這裡
-        });
-
-        if (res.status === 401) {
-            alert("請先登入後再閱讀文章！");
-            window.location.href = "index.html";
-            return null;
-        }
-
-        const result = await res.json();
-        if (!res.ok) throw new Error(result.error || "請求失敗");
-        return result;
-    } catch (err) {
-        console.error("API 請求發生錯誤:", err.message);
-        return { articles: [], success: false };
-    } finally {
-        setLoading(false);
-    }
-}
-
-    // --- 載入列表 ---
-    async function loadArticles() {
-        const res = await fetchData("listArticles");
-        if (!res) return; // 401 已跳轉
-
-        listView.style.display = "block";
-        if (!res.articles || res.articles.length === 0) {
-            listContent.innerHTML = `<p style="color: #888; padding: 20px;">尚無文章內容</p>`;
-            return;
-        }
-
-        listContent.innerHTML = res.articles.map(art => `
-            <div class="card article-card" onclick="goToArticle('${art.id}')" style="cursor:pointer">
-                <h3 style="margin:0; color:#ffff00;">${art.title}</h3>
-                <p style="font-size:0.95rem; color:#ccc; margin: 12px 0;">${art.summary || '點擊閱讀全文...'}</p>
-                <div style="font-size: 0.8rem; color: #666;">
-                    <i class="fa-regular fa-calendar"></i> ${new Date(art.created_at).toLocaleDateString()}
-                </div>
-            </div>
-        `).join('');
-    }
-
-    // --- 載入詳情 ---
-    async function loadDetail(id) {
-        const res = await fetchData("getArticle", { articleId: id });
-        if (!res) return; // 401 已跳轉
-
-        if (!res.success) {
-            alert(res?.error || "無法載入文章");
-            goHome();
-            return;
-        }
-
-        detailView.style.display = "block";
-        document.getElementById("artTitle").innerText = res.article.title;
-        document.getElementById("artDate").innerText = new Date(res.article.created_at).toLocaleDateString();
-        document.getElementById("artContent").innerHTML = res.article.content; 
-    }
-
-    window.goToArticle = (id) => {
-        window.history.pushState({ id }, "", `articles/${id}`);
-        loadDetail(id);
-    };
-
-    window.goHome = () => {
-        window.history.pushState({}, "", "articles.html");
-        loadArticles();
-    };
-
-    window.onpopstate = () => router();
-
-    async function router() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const id = urlParams.get('id');
-        if (id) {
-            await loadDetail(id);
-        } else {
-            await loadArticles();
-        }
-    }
-
-    router();
-</script>
+  <script type="module" src="js/articles.js"></script>
 </body>
 </html>
-

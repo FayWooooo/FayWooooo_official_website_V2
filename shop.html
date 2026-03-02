@@ -1,353 +1,57 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FayWooooo 官方網站 - 兌換中心</title>
-  <base href="/shop.html">
-  <link rel="icon" href="logo.ico">
-  <link rel="stylesheet" href="css/style.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
-  <style>
-    /* 連鎖禮包專屬樣式 */
-    .chain-container {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      max-width: 500px;
-      margin: 20px auto;
-      text-align: left;
-    }
-    .chain-item {
-      display: flex;
-      align-items: center;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 15px;
-      position: relative;
-      transition: 0.3s;
-    }
-    .chain-item.unlocked { border-color: #ff00ff; background: rgba(255, 0, 255, 0.05); }
-    .chain-item.claimed { border-color: #00ff88; opacity: 0.8; }
-    .chain-item.locked { filter: grayscale(1); opacity: 0.4; cursor: not-allowed; }
-    
-    .chain-step {
-      width: 30px; height: 30px;
-      background: #ff00ff;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: bold; margin-right: 15px; flex-shrink: 0;
-    }
-    .claimed .chain-step { background: #00ff88; }
-    .locked .chain-step { background: #555; }
-
-    .chain-info { flex-grow: 1; }
-    .chain-item button {
-      padding: 8px 16px;
-      border-radius: 8px;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .unlocked button { background: #ff00ff; color: white; }
-    .claimed button { background: #00ff88; color: black; }
-    .locked button { background: #333; color: #888; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>兌換中心 | FayWooooo 3.0</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
 </head>
 <body>
-  <header class="topbar">
-    <div class="logo"><i class="fa-solid fa-gift"></i> Fay幣兌換中心</div>
-    <nav class="navbar">
-      <span>
-        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=faywooooo@gmail.com&su=FayWooooo客服聯絡&body=您好，我想詢問關於..."
-           target="_blank" style="color:black;text-decoration:none;display:flex;font-weight:bold;">
-          聯絡 FayWooooo 客服
-        </a>
-      </span>
-      <span id="coinDisplay"><i class="fa-solid fa-coins"></i>&nbsp;Fay幣：載入中...</span>
-      <a href="index.html"><i class="fa-solid fa-house"></i> 首頁</a>
+
+    <div class="bg-glow"></div>
+
+    <header class="topbar">
+        <div class="logo"><i class="fa-solid fa-gift"></i> 商店</div>
+        
+        <nav class="navbar-center">
+            <a href="index.html">首頁</a>
+            <a href="shop.html" class="active">兌換</a>
+            <a href="articles.html">文章</a>
+        </nav>
+
+        <div class="user-status-group">
+            <div class="coin-pill">
+                <i class="fa-solid fa-coins" style="color: #ffd700;"></i>
+                <span id="coinDisplay">--</span>
+            </div>
+            <img id="navAvatar" src="" class="nav-avatar" style="display: none;">
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="notification" class="notification"></div>
+        <section class="card">
+            <div class="section-title">
+                <h2><i class="fa-solid fa-link"></i> 傳奇連鎖禮包</h2>
+            </div>
+            <p class="hint-text">※ 狀態由管理員自動核發，解鎖後方可領取。</p>
+            <div id="chainRewardList" class="chain-list">
+                </div>
+        </section>
+
+        <h2 style="margin-bottom: 20px;"><i class="fa-solid fa-trophy"></i> 獎勵清單</h2>
+        <div id="rewardList" class="shop-grid">
+            </div>
+    </main>
+
+    <nav class="mobile-nav">
+        <a href="index.html"><i class="fas fa-home"></i><br>首頁</a>
+        <a href="shop.html" class="active"><i class="fas fa-store"></i><br>兌換</a>
+        <a href="live.html"><i class="fas fa-video"></i><br>直播</a>
+        <a href="articles.html"><i class="fa-solid fa-book"></i><br>文章</a>
     </nav>
-  </header>
 
-  <div class="mobile-nav">
-    <a href="index.html"><i class="fas fa-home"></i>首頁</a>
-    <a href="shop.html" class="active"><i class="fas fa-store"></i>兌換</a>
-    <a href="live.html"><i class="fas fa-video"></i>直播</a>
-    <a href="articles.html"><i class="fa-solid fa-book-open"></i>文章專區</a>
-    <span id="coinDisplayMobile" style="color: black;"><i class="fa-solid fa-coins"></i>&nbsp;--</span>
-  </div>
-
-  <main class="container2">
-    <div id="notification" class="notification"></div>
-
-    <center>
-      <section class="card2" style="margin-bottom: 25px;">
-        <h2><i class="fa-solid fa-calendar-check"></i> 累積登入獎勵</h2>
-        <p style="font-size:0.8rem; color:#aaa;">不需連續，只要登入即可累積天數！</p>
-        <div class="reward-scroll">
-          <div id="dailyRewardList" class="reward-days"></div>
-        </div>
-        <button id="claimDaily" class="main-btn"><i class="fa-solid fa-gift"></i> 領取今日獎勵</button>
-        <p id="dailyStatus" style="margin-top:10px;color:gold;"></p>
-      </section>
-    </center>
-
-    <center>
-      <section class="card2" style="margin-top: 25px; border: 1px solid rgba(255, 0, 255, 0.3);">
-        <h2><i class="fa-solid fa-link"></i> 傳奇連鎖禮包</h2>
-        <p style="font-size: 0.85rem; color: #aaa;">必須依序解鎖，下一個禮包才會開啟！</p>
-        <div id="chainRewardList" class="chain-container">
-          載入中...
-        </div>
-      </section>
-    </center>
-
-    <center>
-      <section class="card2" style="margin-top: 25px;">
-        <h2><i class="fa-solid fa-box"></i> Fay寶箱</h2>
-        <p>每次開啟需 100 Fay幣，開滿 10 箱可解鎖 Discord 專屬身分組！</p>
-        <div class="box-container">
-          <div class="box" id="boxElement">🎁</div>
-        </div>
-        <p id="result" style="margin-top:15px;color:gold;"></p>
-        <div id="progressText" style="margin-top:8px;">載入中...</div>
-        <div id="progressBar" style="background:rgba(255,255,255,0.1);border-radius:10px;height:12px;margin-top:8px;max-width:400px;margin-left:auto;margin-right:auto;">
-          <div id="progressFill" style="height:100%;width:0%;background:gold;border-radius:10px;transition:0.5s;"></div>
-        </div>
-      </section>
-    </center>
-
-    <h2 style="margin-top:60px;"><i class="fa-solid fa-trophy"></i> 獎勵清單</h2>
-    <div id="rewardList">載入中...</div>
-  </main>
-
-  <footer>
-    <p>© 2025 FayWooooo 官方網站 | <a href="https://www.youtube.com/@FayWooooo" target="_blank">YouTube</a></p>
-  </footer>
-
-  <script type="module">
-    import { supabase } from "./js/supabase-config.js";
-    const API_URL = "https://wcqutexugvrgnyusnkpv.supabase.co/functions/v1/rewards";
-
-    const result = document.getElementById("result");
-    const progressText = document.getElementById("progressText");
-    const progressFill = document.getElementById("progressFill");
-    const rewardList = document.getElementById("rewardList");
-    const coinDisplay = document.getElementById("coinDisplay");
-    const coinDisplayMobile = document.getElementById("coinDisplayMobile");
-    const claimBtn = document.getElementById("claimDaily");
-    const dailyStatus = document.getElementById("dailyStatus");
-    const dailyRewardList = document.getElementById("dailyRewardList");
-
-    // ✅ Session
-    async function getUserSession() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        showNotification("請先登入！", "error");
-        location.replace("index.html");
-        return null;
-      }
-      return { email: session.user.email, token: session.access_token, id: session.user.id };
-    }
-
-    // ✅ 顯示通知
-    function showNotification(message, type = "success") {
-      const notification = document.getElementById("notification");
-      notification.textContent = message;
-      notification.className = `notification ${type} show`;
-      setTimeout(() => notification.classList.remove("show"), 3000);
-    }
-
-    // ✅ 載入 Fay 幣
-    async function loadFaycoins() {
-      const user = await getUserSession();
-      if (!user) return;
-      const { data } = await supabase.from("profiles").select("faycoins").eq("email", user.email).maybeSingle();
-      const val = data?.faycoins ?? 0;
-      const html = `<i class="fa-solid fa-coins"></i>&nbsp;Fay幣：${val}`;
-      coinDisplay.innerHTML = html;
-      coinDisplayMobile.innerHTML = html;
-    }
-
-    // ✅ 1. 載入連鎖禮包
-    async function loadChainRewards() {
-      const chainContainer = document.getElementById("chainRewardList");
-      try {
-        const user = await getUserSession();
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${user.token}` },
-          body: JSON.stringify({ action: "listChainRewards", email: user.email })
-        });
-        const data = await res.json();
-        
-        if (data.success && data.chains.length > 0) {
-          chainContainer.innerHTML = data.chains.map((c, index) => `
-            <div class="chain-item ${c.isClaimed ? 'claimed' : (c.isLocked ? 'locked' : 'unlocked')}">
-              <div class="chain-step">${c.isClaimed ? '✓' : index + 1}</div>
-              <div class="chain-info">
-                <div style="font-weight:bold;">${c.title}</div>
-                <div style="font-size:0.8rem; color:#ccc;">${c.price === 0 ? '免費領取' : '價格: ' + c.price + ' Fay幣'}</div>
-              </div>
-              <button onclick="buyChain('${c.id}', '${c.title}')" ${c.isClaimed || c.isLocked ? 'disabled' : ''}>
-                ${c.isClaimed ? '已領取' : (c.isLocked ? '🔒 鎖定中' : '解鎖')}
-              </button>
-            </div>
-          `).join("");
-        } else {
-          chainContainer.innerHTML = "目前暫無禮包資料";
-        }
-      } catch (err) {
-        chainContainer.innerHTML = "載入連鎖禮包失敗";
-      }
-    }
-
-    // ✅ 2. 購買連鎖禮包 (綁定到 window)
-    window.buyChain = async (id, title) => {
-      if (!confirm(`確定要解鎖「${title}」嗎？`)) return;
-      const user = await getUserSession();
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${user.token}` },
-        body: JSON.stringify({ action: "buyChainReward", email: user.email, chainId: id })
-      });
-      const data = await res.json();
-      showNotification(data.success ? data.message : data.error, data.success ? "success" : "error");
-      if (data.success) {
-        loadChainRewards();
-        loadFaycoins();
-      }
-    };
-
-    // ✅ 3. 每日登入 (累積制)
-    async function loadDailyRewards() {
-      const user = await getUserSession();
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${user.token}` },
-        body: JSON.stringify({ action: "getStreakInfo", email: user.email })
-      });
-      const data = await res.json();
-      const streak = data.streak || 0;
-      const lastLogin = data.lastLogin;
-      const today = new Date().toISOString().split('T')[0];
-
-      dailyRewardList.innerHTML = "";
-      for (let i = 1; i <= 30; i++) {
-        const div = document.createElement("div");
-        div.className = "reward-day";
-        if (i <= streak) div.classList.add("claimed");
-        else if (i > streak + 1) div.classList.add("locked");
-        
-        div.innerHTML = `
-          <div class="day-num">Day ${i}</div>
-          <div>${i === 30 ? "管理員" : "15 幣"}</div>
-          <small>${i <= streak ? "✅ 已領" : (i === streak + 1 && lastLogin !== today ? "🟢 可領" : "🔒 待解鎖")}</small>
-        `;
-        dailyRewardList.appendChild(div);
-      }
-
-      if (lastLogin === today) {
-        claimBtn.disabled = true;
-        claimBtn.innerHTML = '<i class="fa-solid fa-check"></i> 今日已領取';
-      }
-    }
-
-    claimBtn.onclick = async () => {
-      const user = await getUserSession();
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${user.token}` },
-        body: JSON.stringify({ action: "dailyLogin", email: user.email })
-      });
-      const data = await res.json();
-      if (data.success) {
-        showNotification(data.message);
-        loadDailyRewards();
-        loadFaycoins();
-      } else {
-        showNotification(data.message, "error");
-      }
-    };
-
-    // ✅ 4. 寶箱功能
-    document.getElementById("boxElement").onclick = async () => {
-      const user = await getUserSession();
-      result.innerHTML = `處理中...`;
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${user.token}` },
-        body: JSON.stringify({ action: "openBox", email: user.email })
-      });
-      const data = await res.json();
-      if (data.success) {
-        result.innerHTML = `🎉 獲得 <b>${data.reward}</b>`;
-        loadProgress();
-        loadFaycoins();
-      } else {
-        showNotification(data.error, "error");
-        result.innerHTML = "";
-      }
-    };
-
-    async function loadProgress() {
-      const user = await getUserSession();
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${user.token}` },
-        body: JSON.stringify({ action: "progress", email: user.email })
-      });
-      const data = await res.json();
-      const p = data.progress || 0;
-      progressText.textContent = `已開啟 ${p}/10 箱`;
-      progressFill.style.width = `${p * 10}%`;
-    }
-
-    // ✅ 5. 一般獎勵
-    async function loadRewards() {
-      const user = await getUserSession();
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${user.token}` },
-        body: JSON.stringify({ action: "listRewards", email: user.email })
-      });
-      const data = await res.json();
-      if (data.success) {
-        rewardList.innerHTML = data.rewards.map(r => `
-          <div class="reward-card">
-            <div class="reward-info">
-              <div class="reward-title">${r.title}</div>
-              <div class="reward-desc">${r.description || ""}</div>
-            </div>
-            <div class="reward-action">
-              <div class="reward-price"><i class="fa-solid fa-coins"></i> ${r.price}</div>
-              <button onclick="buyNormal('${r.id}', '${r.title}')" class="buy-btn">購買</button>
-            </div>
-          </div>
-        `).join("");
-      }
-    }
-
-    window.buyNormal = async (id, title) => {
-      if (!confirm(`確認購買「${title}」？`)) return;
-      const user = await getUserSession();
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${user.token}` },
-        body: JSON.stringify({ action: "buyReward", email: user.email, rewardId: id })
-      });
-      const data = await res.json();
-      showNotification(data.success ? data.message : data.error, data.success ? "success" : "error");
-      if (data.success) loadFaycoins();
-    };
-
-    // 啟動
-    loadFaycoins();
-    loadChainRewards();
-    loadDailyRewards();
-    loadProgress();
-    loadRewards();
-  </script>
+    <script type="module" src="js/shop.js"></script>
 </body>
 </html>

@@ -7,7 +7,6 @@ const generateVoucherUrl = "https://wcqutexugvrgnyusnkpv.supabase.co/functions/v
 
 // 抓取前端 HTML 元素
 const adminPanel = document.getElementById("adminPanel");
-const accessDenied = document.getElementById("accessDenied");
 const adminContent = document.getElementById("adminContent");
 
 // =====================================
@@ -41,7 +40,6 @@ async function initAdmin() {
   }
 
   // ✅ 顯示後台
-  adminContent.style.display = "block";
   adminPanel.classList.remove("hidden");
 
   // 初始化功能
@@ -58,21 +56,13 @@ async function initAdmin() {
 // ❌ 權限不足顯示
 // =====================================
 function showDenied(message) {
-  const menu = document.querySelector(".profile-menu");
-  
-  if (menu) {
-    // 1. 加上 unauthorized 類別
-    menu.classList.add("unauthorized");
-    
-    // 2. 設定 CSS 變數訊息
-    menu.style.setProperty("--deny-reason", `"${message}"`);
-  }
-
-  // 同時隱藏後台主內容，避免非管理員直接看到後台數據
-  const adminContent = document.getElementById("adminContent");
+  // 隱藏後台主內容，避免非管理員直接看到後台數據
   if (adminContent) {
-    adminContent.innerHTML = `<div style="text-align:center; padding:50px; color:gray;">
-      <i class="fa-solid fa-lock"></i> 頁面已鎖定，請聯繫管理員。
+    adminContent.innerHTML = `<div style="text-align:center; padding:50px; color:white; background:rgba(255,0,0,0.1); border:1px solid red; border-radius:10px; margin:20px;">
+      <i class="fa-solid fa-lock" style="font-size:2rem; color:red;"></i> 
+      <h2 style="color:red;">權限不足</h2>
+      <p>${message}</p>
+      <a href="index.html" class="main-btn">返回首頁</a>
     </div>`;
   }
 }
@@ -80,15 +70,12 @@ function showDenied(message) {
 // =====================================
 // ⚙️ 綁定按鈕事件
 // =====================================
-// ✅ 找到 setupActions 函數並修改如下：
 function setupActions(adminEmail, token) {
   const addCoin = document.getElementById("addCoin");
   const reduceCoin = document.getElementById("reduceCoin");
   const resetCoin = document.getElementById("resetCoin");
   const publishNewsBtn = document.getElementById("publishNews");
   const addRewardBtn = document.getElementById("addReward");
-  
-  // 新增：文章發布按鈕
   const publishArticleBtn = document.getElementById("publishArticle");
 
   if (addCoin) addCoin.addEventListener("click", () => handleCoinOperation(adminEmail, token, "add"));
@@ -97,13 +84,12 @@ function setupActions(adminEmail, token) {
   if (publishNewsBtn) publishNewsBtn.addEventListener("click", () => publishNews(adminEmail, token));
   if (addRewardBtn) addRewardBtn.addEventListener("click", () => addReward(adminEmail, token));
   
-  // ✅ 修正：只有當按鈕存在時才綁定，並傳入正確的參數
   if (publishArticleBtn) {
     publishArticleBtn.onclick = () => handlePublishArticle(adminEmail, token);
   }
 }
 
-// ✅ 新增專門處理文章發布的函數 (放在 admin.js 下方)
+// --- 文章發布 ---
 async function handlePublishArticle(adminEmail, token) {
   const title = document.getElementById("artTitle").value.trim();
   const summary = document.getElementById("artSummary").value.trim();
@@ -214,57 +200,7 @@ async function publishNews(email, token) {
   alert(result.success ? "✅ 公告已發布" : `❌ 發布失敗：${result.error}`);
   await loadNotifications(email, token);
 }
-// ✅ 在 admin.js 中找到合適位置加入監聽器
-document.getElementById("publishArticle").onclick = async () => {
-  const title = document.getElementById("artTitle").value.trim();
-  const summary = document.getElementById("artSummary").value.trim();
-  const content = document.getElementById("artContent").value.trim();
-  const btn = document.getElementById("publishArticle");
 
-  if (!title || !content) return alert("❌ 請填寫標題與內容！");
-
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    const user = session?.user;
-    const token = session?.access_token;
-
-    btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 發布中...`;
-
-    const res = await fetch(baseUrl + "?action=addArticle", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        email: user.email, // 用於後端 verifyAdmin
-        title,
-        summary,
-        content
-      }),
-    });
-
-    const result = await res.json();
-    if (result.success) {
-      alert("✅ 文章已成功發布至專區！");
-      // 清空表格
-      document.getElementById("artTitle").value = "";
-      document.getElementById("artSummary").value = "";
-      document.getElementById("artContent").value = "";
-      // 重新整理通知清單（如果有實作的話）
-      if (typeof loadNotifications === "function") loadNotifications();
-    } else {
-      alert("❌ 發布失敗：" + (result.error || "未知錯誤"));
-    }
-  } catch (err) {
-    console.error("Article Publish Error:", err);
-    alert("⚠️ 連線伺服器失敗");
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = `<i class="fa-solid fa-upload"></i> 發布文章到專區`;
-  }
-};
 // =====================================
 // 🏆 新增獎勵
 // =====================================
@@ -325,9 +261,9 @@ async function loadNotifications(adminEmail, token) {
     list.innerHTML = data.notifications
       .map(
         (n) => `
-        <div class="notify-item">
+        <div class="notify-item" style="border-bottom:1px solid rgba(255,255,255,0.1); padding:8px 0; font-size:0.9rem;">
           <b>[${n.type}]</b> ${n.message}
-          <div class="notify-time">${new Date(n.created_at).toLocaleString()}</div>
+          <div class="notify-time" style="color:gray; font-size:0.8rem;">${new Date(n.created_at).toLocaleString()}</div>
         </div>`
       )
       .join("");
@@ -338,7 +274,7 @@ async function loadNotifications(adminEmail, token) {
 }
 
 // =====================================
-// 🎟️ Voucher 生成功能（綁 supabase-config）
+// 🎟️ Voucher 生成功能
 // =====================================
 function setupVoucherActions(adminEmail, token) {
   const btn = document.getElementById("createVoucher");
@@ -367,11 +303,8 @@ function setupVoucherActions(adminEmail, token) {
       });
       
       const data = await resp.json();
-      console.log("🔍 Voucher Response:", data); // ← 加這行
       
       if (data.success) {
-        console.log("📦 Codes:", data.codes);
-      
         list.innerHTML = "";
         data.codes.forEach((c) => {
           const code = typeof c === "string" ? c : c.code;
@@ -380,15 +313,19 @@ function setupVoucherActions(adminEmail, token) {
             : c.url || `https://officialfaywooooo.vercel.app/voucher?code=${c.code}`;
       
           const li = document.createElement("li");
-          li.innerHTML = `<a href="${url}" target="_blank" style="color:#6cf;">${code}</a>`;
-          li.style.background = "rgba(255,255,255,0.1)";
+          li.innerHTML = `<span style="color:#6cf; font-family:monospace;">${code}</span>`;
+          li.style.background = "rgba(255,255,255,0.05)";
           li.style.padding = "8px 10px";
           li.style.borderRadius = "6px";
           li.style.margin = "4px 0";
+          li.style.display = "flex";
+          li.style.justifyContent = "space-between";
       
           const copyBtn = document.createElement("button");
           copyBtn.textContent = "複製連結";
-          copyBtn.style.marginLeft = "10px";
+          copyBtn.className = "main-btn";
+          copyBtn.style.padding = "2px 8px";
+          copyBtn.style.fontSize = "0.8rem";
           copyBtn.onclick = () => {
             navigator.clipboard.writeText(url);
             copyBtn.textContent = "✅ 已複製";
@@ -398,10 +335,7 @@ function setupVoucherActions(adminEmail, token) {
           li.appendChild(copyBtn);
           list.appendChild(li);
         });
-      }
-      
-      
-       else {
+      } else {
         alert(data.error || "生成失敗");
       }
     } catch (e) {
@@ -418,5 +352,3 @@ function setupVoucherActions(adminEmail, token) {
 // 🚀 啟動
 // =====================================
 initAdmin();
-document.body.style.visibility = "visible";
-
