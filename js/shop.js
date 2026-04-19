@@ -136,24 +136,48 @@ async function loadChainRewards(user) {
     });
 }
 
-// 領取連鎖禮包邏輯
+// 領取連鎖禮包邏輯 - 加入狀態過濾
 async function handleChainAction(id, title, price) {
+    // 1. 獲取觸發此函數的按鈕
+    const btn = event?.currentTarget; 
+    
+    // 2. 安全檢查：如果按鈕不存在，或按鈕被設為 disabled，或按鈕所在的 div 包含 locked 類名，則拒絕執行
+    // 這樣即便 user 手動刪除了 HTML 上的 disabled 屬性，函數執行時也會檢查邏輯
+    if (btn) {
+        const parentItem = btn.closest('.chain-item');
+        if (btn.disabled || (parentItem && parentItem.classList.contains('locked'))) {
+            showNotify("操作無效：請依序解鎖禮包！", "error");
+            return;
+        }
+    }
+
     const user = await checkUser();
     if(!user) return;
+    
     if(!confirm(`確認消耗 ${price} Fay幣 購買「${title}」？`)) return;
 
-    const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${user.token}` },
-        body: JSON.stringify({ action: "buyChainReward", email: user.email, chainId: id })
-    });
-    const data = await res.json();
-    
-    if (data.success) {
-        showNotify(`🎉 購買成功：${title}`);
-        initShop(); 
-    } else {
-        showNotify(data.error || "購買失敗", "error");
+    // 發送請求前，可以再次鎖定按鈕防止連續點擊
+    if (btn) btn.disabled = true;
+
+    try {
+        const res = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${user.token}` },
+            body: JSON.stringify({ action: "buyChainReward", email: user.email, chainId: id })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            showNotify(`🎉 購買成功：${title}`);
+            initShop(); 
+        } else {
+            showNotify(data.error || "購買失敗", "error");
+            // 失敗時重新整理，把該鎖回來的按鈕鎖回來
+            initShop();
+        }
+    } catch (err) {
+        showNotify("系統連線錯誤", "error");
+        initShop();
     }
 }
 
