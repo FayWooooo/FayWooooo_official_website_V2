@@ -44,7 +44,7 @@
     <main class="container">
         <div class="hero">
             <h1 class="title">荒野亂鬥<br><span class="gradient-text">影音創作者</span></h1>
-            <p class="subtitle">歡迎來到 FayWooooo 2026。登入後可完成任務、開寶箱、升級通行券！</p>
+            <p class="subtitle">歡迎來到 FayWooooo 官方網站！</p>
         </div>
 
         <div class="grid-layout">
@@ -60,15 +60,17 @@
             <section class="card">
                 <h2><i class="fa-solid fa-chart-line"></i> 頻道數據</h2>
                 <div class="stats">
-                    <div class="stat-item"><span>訂閱者</span><strong>1,400+</strong></div>
-                    <div class="stat-item"><span>總觀看</span><strong>700k+</strong></div>
+                    <div class="stat-item"><span>訂閱者</span><strong>1,500+</strong></div>
+                    <div class="stat-item"><span>總觀看</span><strong>850k+</strong></div>
                 </div>
             </section>
         </div>
 
         <section id="newsSection" class="card">
             <h2><i class="fa-solid fa-bullhorn"></i> 最新公告</h2>
-            <div id="newsList" class="news-list">暫無公告</div>
+            <div id="newsList" class="news-list">
+                <p style="color: #86868b; font-size: 0.9rem;">目前暫無其他公告，請關注右下角精彩賽事！</p>
+            </div>
         </section>
     </main>
 
@@ -77,6 +79,24 @@
         <a href="/shop"><i class="fa-solid fa-gift"></i><span>兌換</span></a>
         <a href="/articles"><i class="fa-solid fa-book"></i><span>文章</span></a>
     </nav>
+
+    <div id="miniPromoBtn" class="mini-promo-btn hidden">
+        <img src="亂鬥巔峰盃.png" alt="賽事圖標">
+    </div>
+
+    <div class="floating-card" id="promoCard">
+        <button id="closePromoBtn" class="close-promo-btn">&times;</button>
+        
+        <a href="tournament.html" class="promo-link">
+            <img src="亂鬥巔峰盃.png" alt="賽事廣告" class="card-img">
+        </a>
+        
+        <div class="card-content">
+            <h3>荒野亂鬥：亂鬥巔峰盃</h3>
+            <p>首屆頻道爭霸賽！贏家獨得免費限定造型與超炫表情，立刻報名證明實力！</p>
+            <button onclick="window.location.href='tournament.html'">查看詳情 & 報名</button>
+        </div>
+    </div>
 
     <script type="module" src="js/index.js"></script>
 </body>

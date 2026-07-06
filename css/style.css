@@ -206,10 +206,22 @@ body {
 
 .badge {
     background: var(--primary);
-    font-size: 0.7rem;
+    font-size: 20px;
     padding: 4px 8px;
     border-radius: 6px;
-    color: white;
+    color: rgb(0, 0, 0);
+    font-weight: bold;
+}
+.reward-name{
+    font-size: 18px;
+}
+.reward-images{
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+}
+.reward-images img{
+    width: 300px;
 }
 
 .grid-layout {
@@ -656,4 +668,305 @@ input:focus, textarea:focus {
   .card {
       padding: 20px;
   }
+}
+/* --- 右下角懸浮卡片基礎設定 --- */
+.floating-card {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 300px;
+    background: rgba(28, 28, 30, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+    z-index: 999;
+    transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* 懸浮卡片微動效 */
+.floating-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(0, 113, 227, 0.4);
+}
+
+.promo-link {
+    display: block;
+    cursor: pointer;
+}
+
+.card-img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.promo-link:hover .card-img {
+    transform: scale(1.03); /* 懸浮在圖片上時有微放大效果 */
+}
+
+.card-content {
+    padding: 16px;
+    color: #f5f5f7;
+}
+
+.card-content h3 {
+    margin: 0 0 6px 0;
+    font-size: 1.1rem;
+}
+
+.card-content p {
+    margin: 0 0 14px 0;
+    font-size: 0.85rem;
+    color: #86868b;
+    line-height: 1.4;
+}
+
+.card-content button {
+    width: 100%;
+    padding: 10px;
+    background: #0071e3;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.card-content button:hover { background: #0077ed; }
+
+/* --- 絕對定位的叉叉按鈕 --- */
+.close-promo-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 26px;
+    height: 26px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: background 0.2s;
+}
+.close-promo-btn:hover {
+    background: rgba(255, 59, 48, 0.8); /* 懸浮變成 Apple 警示紅 */
+}
+
+/* --- 縮小後的圓形圖片按鈕 --- */
+.mini-promo-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #1c1c1e;
+    border: 2px solid #0071e3;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    cursor: pointer;
+    z-index: 999;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.mini-promo-btn:hover {
+    transform: scale(1.1) rotate(10deg);
+}
+.mini-promo-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 隱藏用的通用工具 class */
+.hidden {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transform: scale(0.8) translateY(20px);
+}
+
+/* --- RWD 手機版優化 --- */
+@media (max-width: 768px) {
+    /* 為了不遮擋你的行動版底部導覽列 (.mobile-nav) */
+    .floating-card, .mini-promo-btn {
+        bottom: 80px; 
+        right: 20px;
+    }
+    .floating-card {
+        width: 280px;
+    }
+}
+/* ===============================================
+   🏆 賽事報名頁面專屬擴充樣式 (FayWooooo 3.0) - 更新優化版
+   =============================================== */
+
+/* 網格版面：左寬右窄 雙欄完美比例 */
+.tournament-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    align-items: start;
+    gap: 25px;
+    margin-bottom: 50px;
+}
+
+/* 確保內部欄位垂直堆疊並流暢 */
+.tournament-info-flow,
+.tournament-side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0; /* 依靠 .card 的 margin-bottom 控制間距，或改用 gap */
+}
+
+/* 修正：移除先前限制寬度的設定，讓兩邊卡片寬度自適應填滿欄位 */
+.bracket-card {
+    width: 100% !important;
+}
+
+/* 圖片在極端螢幕下的自適應響應式處理 */
+.reward-images {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+    flex-wrap: wrap; /* 手機版自動往下排，不卡死擠壓 */
+}
+
+.reward-images img {
+    max-width: 100%;
+    width: 280px;
+    height: auto;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+/* 冠軍特殊閃爍外框 */
+.card.reward-highlight {
+    border-color: rgba(255, 0, 255, 0.4);
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+    box-shadow: 0 10px 30px rgba(255, 0, 255, 0.05);
+}
+
+.reward-box {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.reward-item-detail {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 12px 20px;
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+}
+
+/* 規範列表樣式調整 */
+.tm-list {
+    list-style: none;
+    padding-left: 0;
+}
+.tm-list li {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+    color: var(--text-dim);
+}
+.tm-list li::before {
+    content: "⚡";
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--primary);
+}
+.tm-list li b {
+    color: var(--text-main);
+}
+
+/* 表單精細優化 */
+.tm-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.form-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-input-group label {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.form-input-group label i {
+    color: var(--secondary);
+}
+
+.tm-submit-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 14px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(255, 0, 255, 0.2);
+    border: none;
+    border-radius: 50px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+    text-decoration: none;
+}
+
+.tm-submit-btn:hover {
+    box-shadow: 0 0 25px rgba(0, 242, 255, 0.6);
+    transform: translateY(-2px);
+    color: #fff;
+}
+
+/* 輔助顏色定義 */
+.text-secondary-color { color: var(--secondary) !important; }
+.text-error-color { color: var(--error) !important; }
+
+/* ===============================================
+   📱 完美手機頁面 RWD 響應式適配
+   =============================================== */
+@media (max-width: 900px) {
+    /* 轉為乾淨的單欄直式排版 */
+    .tournament-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+    
+    /* 讓圖片在手機上維持剛好的大小 */
+    .reward-images img {
+        width: 100%; /* 寬度撐滿卡片 */
+        max-width: 320px;
+        margin: 0 auto; /* 居中 */
+    }
+    
+    /* 為了不被底部膠囊導覽列 (.mobile-nav) 擋到內容，增加底部留白 */
+    .container {
+        padding-bottom: 100px;
+    }
 }

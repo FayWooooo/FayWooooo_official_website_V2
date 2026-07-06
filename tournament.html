@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>荒野亂鬥：亂鬥巔峰盃 - FayWooooo</title>
+    <link rel="icon" href="logo.ico">
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+
+    <header class="topbar">
+        <div class="logo"><i class="fa-solid fa-star"></i> FayWooooo</div>
+        <nav class="navbar-center">
+            <a href="index.html">首頁</a>
+            <a href="shop.html">兌換</a>
+            <a href="articles.html">文章</a>
+        </nav>
+        
+        <div id="userArea">
+            <button id="loginBtn" class="main-btn">
+                <i class="fa-brands fa-google"></i> 登入
+            </button>
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <div class="hero">
+            <h1 class="title">首屆 <span class="gradient-text">亂鬥巔峰盃</span></h1>
+            <p class="subtitle">實力至上，用你的本命英雄轟翻全場！免費贏取限定造型與表情！</p>
+        </div>
+
+        <!-- 網格雙欄佈局 -->
+        <div class="grid-layout tournament-grid">
+            
+            <!-- 左側區域：賽事獎勵與賽制 -->
+            <div class="tournament-info-flow">
+                
+                <section class="card reward-highlight">
+                    <h2><i class="fa-solid fa-trophy text-secondary-color"></i> 賽事獎勵</h2>
+                    <div class="reward-box">
+                        <div class="reward-item-detail">
+                            <span class="badge">獲勝者</span>
+                            <strong class="reward-name">邪典教授 保力造型 X1 or <br>雷納德卡爾 卡爾造型 X1 2擇1</strong>    
+                        </div>
+                        <div class="reward-images">
+                            <img src="邪典教授保力造型.png" alt="邪典教授保力造型">
+                            <img src="雷納德卡爾造型.png" alt="雷納德卡爾造型">
+                        </div>
+                        <div class="reward-item-detail">
+                            <span class="badge" style="background: var(--secondary);">參加獎(每人都有)</span>
+                            <strong class="reward-name">籃球表情 X1</strong>
+                        </div>
+                        <div class="reward-images">
+                            <img src="籃球表情.png" alt="籃球表情">
+                        </div>
+                        <div class="reward-item-detail">
+                            <span class="badge" style="background: var(--success);">額外加碼(無報名比賽也可抽獎)</span>
+                            <strong class="reward-name">邪典教授 保力造型 X3</strong>
+                        </div>
+                        <div class="reward-images">
+                            <img src="邪典教授保力造型.png" alt="邪典教授保力造型">
+                        </div>
+                        <h2 style="color:red; font-size: 1.1rem; margin-top: 15px;">注意！本抽獎報名處於YT影片留言區，非比賽報名區，請留意避免填錯。</h2>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <h2><i class="fa-solid fa-users"></i> 賽制介紹</h2>
+                    <ul class="feature-list tm-list">
+                        <li><b>比賽形式：</b>採1V1對戰方式進行。</li>
+                        <li><b>比賽地圖：</b>搶星大作戰-全空圖</li>
+                        <li><b>比賽時間：</b>主辦方將於報名截止後，統一通知參賽者比賽時間與對手。</li>
+                        <img src="賽事地圖.jpg" alt="賽事地圖" style="width: 100%; margin-top: 10px; border-radius: 8px;">
+                    </ul>
+                </section>
+
+            </div>
+
+            <!-- 右側區域：表單、目的、規章與賽程（搬移至此處） -->
+            <div class="tournament-side-panel">
+                
+                <section class="card">
+                    <h2><i class="fa-solid fa-pen-to-square"></i> 線上報名表單</h2>
+                    <p class="hint-text">請確實填寫以下資料，送出後即完成報名程序。</p>
+                    
+                    <form id="regForm" class="tm-form">
+                        <div class="form-input-group">
+                            <label><i class="fa-solid fa-user"></i> 遊戲內暱稱</label>
+                            <input type="text" id="playerName" required placeholder="請輸入您的暱稱">
+                        </div>
+                        
+                        <div class="form-input-group">
+                            <label><i class="fa-solid fa-hashtag"></i> 玩家標籤</label>
+                            <input type="text" id="playerTag" required placeholder="例如：#JGV8LY02V">
+                        </div>
+                        
+                        <div class="form-input-group">
+                            <label><i class="fa-solid fa-comments"></i> 聯絡方式 (Instagram 或 LINE ID)</label>
+                            <input type="text" id="contactInfo" required placeholder="請輸入您的LINE ID或Instagram帳號">
+                        </div>
+                        
+                        <button type="submit" class="main-btn tm-submit-btn">
+                            <i class="fa-solid fa-paper-plane"></i> 提交報名資料
+                        </button>
+                    </form>
+                </section>
+
+                <section class="card">
+                    <h2><i class="fa-solid fa-bullhorn"></i> 賽事目的</h2>
+                    <p>這不只是一場比賽，更是你證明自己實力的最高舞台！無論你是路人神仙還是不敗傳奇，只要你敢秀，這裡就是你的主場。全程線上對決，趕快填寫表單報名，來帶走屬於你的榮譽與獎勵！</p>
+                </section>
+
+                <section class="card">
+                    <h2><i class="fa-solid fa-circle-exclamation text-error-color"></i> 注意事項與規章</h2>
+                    <ul class="feature-list tm-list">
+                        <li><b>報名資格：</b>不限盃數，但每位參賽者僅限使用一個帳號報名。若發現一人多報，將直接取消參賽資格。</li>
+                        <li><b>賽事名額：</b>10位，以報名順序決定。</li>
+                        <li><b>資訊正確性：</b>請務必填寫真實且正確的報名資料。若因資料錯誤導致無法邀請進房，視同放棄比賽。</li>
+                        <li><b>斷線處理：</b>線上賽事若因個人網路不穩、斷線或設備問題導致落敗，主辦方恕不進行重賽。</li>
+                        <li><b>運動家精神：</b>嚴禁使用任何外掛軟體、代打或刻意窺屏。一經查證屬實，立即剝奪比賽資格。</li>
+                        <li><b>最終解釋權：</b>本主辦頻道保留隨時修改、變更或終止本賽事之權利。</li>
+                    </ul>
+                </section>
+
+                <section class="card bracket-card">
+                    <h2><i class="fa-solid fa-sitemap"></i> 賽程表</h2>
+                    <p style="margin-bottom: 15px;">最新訊息請加入LINE社群查看</p>
+                    <a href="https://line.me/ti/g2/rDYPEsfEL9t58dGSYcwP3ScJvsu9hnp3y15-4w?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank" class="main-btn tm-submit-btn">
+                        <i class="fa-solid fa-link"></i> 加入LINE社群
+                    </a>
+                </section>
+
+            </div>
+        </div>
+
+    </main>
+
+    <nav class="mobile-nav">
+        <a href="index.html"><i class="fas fa-home"></i><span>首頁</span></a>
+        <a href="shop.html"><i class="fa-solid fa-gift"></i><span>兌換</span></a>
+        <a href="articles.html"><i class="fa-solid fa-book"></i><span>文章</span></a>
+    </nav>
+    <script type="module" src="js/tournament.js"></script>
+</body>
+</html>
