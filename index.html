@@ -15,7 +15,7 @@
     <header class="topbar">
         <div class="logo"><i class="fa-solid fa-star"></i> FayWooooo</div>
         <nav class="navbar-center">
-            <a href="home.html" class="active">首頁</a>
+            <a href="index.html" class="active">首頁</a>
             <a href="shop.html">兌換</a>
             <a href="articles.html">文章</a>
         </nav>
@@ -27,19 +27,26 @@
         </div>
     </header>
 
-    <div id="profileMenu" class="glass-card profile-menu hidden">
-        <div class="profile-header">
-            <img id="userAvatar" src="https://i.imgur.com/4M34hi2.png" alt="Avatar">
-            <div class="profile-text">
-                <h3 id="userName">載入中...</h3>
-                <p id="coinDisplay"><i class="fa-solid fa-coins"></i> Fay幣：<span id="userCoins">--</span></p>
-            </div>
-        </div>
-        <hr class="divider">
-        <div class="menu-actions">
-            <button id="logoutBtn" class="menu-btn logout"><i class="fa-solid fa-right-from-bracket"></i> 登出帳號</button>
+ <div id="profileMenu" class="glass-card profile-menu hidden">
+    <div class="profile-header">
+        <img id="userAvatar" src="https://i.imgur.com/4M34hi2.png" alt="Avatar">
+        <div class="profile-text">
+            <h3 id="userName">載入中...</h3>
+            <p id="tagDisplay" class="user-tag-wrapper">
+                <i class="fa-solid fa-hashtag"></i> <span id="userTag">尚未設定</span>
+                <button id="copyTagBtn" class="copy-tag-btn" title="複製標籤">
+                    <i class="fa-regular fa-copy"></i>
+                </button>
+            </p>
+            <p id="coinDisplay"><i class="fa-solid fa-coins"></i> Fay幣：<span id="userCoins">--</span></p>
         </div>
     </div>
+    <hr class="divider">
+    <div class="menu-actions">
+        <button class="menu-btn" onclick="location.href='setting.html'"><i class="fa-solid fa-id-card"></i> 個人資料設定</button>
+        <button id="logoutBtn" class="menu-btn logout"><i class="fa-solid fa-right-from-bracket"></i> 登出帳號</button>
+    </div>
+</div>
 
     <main class="container">
         <div class="hero">

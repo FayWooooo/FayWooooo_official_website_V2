@@ -1,8 +1,5 @@
 import { supabase } from "./supabase-config.js";
 
-// 🔗 你的 Supabase Edge Function 網址
-const FUNCTION_URL = "https://wcqutexugvrgnyusnkpv.supabase.co/functions/v1/tournaments";
-
 // DOM 元素選取
 const userArea = document.getElementById("userArea");
 const profileMenu = document.getElementById("profileMenu");
@@ -11,11 +8,9 @@ const userAvatar = document.getElementById("userAvatar");
 const userCoins = document.getElementById("userCoins");
 const logoutBtn = document.getElementById("logoutBtn");
 
-const regForm = document.getElementById("regForm");
-const playerNameInput = document.getElementById("playerName");
-const playerTagInput = document.getElementById("playerTag");
-const contactInfoInput = document.getElementById("contactInfo");
-const submitBtn = document.querySelector(".tm-submit-btn");
+// 玩家標籤 DOM
+const userTag = document.getElementById("userTag");
+const copyTagBtn = document.getElementById("copyTagBtn");
 
 // 自訂彈窗 DOM
 const customModal = document.getElementById("customModal");
@@ -28,34 +23,30 @@ let currentUser = null;
 
 // === 1. 初始化與跨頁面 Session 狀態監聽 ===
 async function init() {
-    // 監聽 auth 狀態轉變 (當玩家在別的分頁登入或登出時，此分頁會自動同步)
     supabase.auth.onAuthStateChange(async (event, session) => {
         if (session) {
             currentUser = session.user;
             await renderLoggedIn(currentUser);
-            await callCheckRegistration(currentUser); // 呼叫 Deno 檢查是否報名過
         } else {
             currentUser = null;
             renderLoggedOut();
         }
     });
 
-    // 初始載入檢查
     const { data } = await supabase.auth.getSession();
     if (data.session) {
         currentUser = data.session.user;
         await renderLoggedIn(currentUser);
-        await callCheckRegistration(currentUser);
     } else {
         renderLoggedOut();
     }
 }
 
-// === 2. 自訂頁內視窗控制 (代替原生 alert) ===
+// === 2. 自訂頁內視窗控制 ===
 function showModal(title, message) {
     if (!customModal) return;
-    modalTitle.textContent = title;
-    modalMessage.textContent = message;
+    if (modalTitle) modalTitle.textContent = title;
+    if (modalMessage) modalMessage.textContent = message;
     customModal.classList.remove("hidden");
 }
 
@@ -65,18 +56,20 @@ if (modalCloseBtn) {
     });
 }
 
-// === 3. 登入 UI 控制：徹底修復登入按鈕還在的 Bug ===
+// === 3. 登入 UI 控制與名片渲染 ===
 async function renderLoggedIn(user) {
     if (!userArea) return;
 
-    // 清空 userArea 內容，動態生成頭像，確保「登入」按鈕被完全覆蓋與抹除
+    const avatarUrl = user.user_metadata?.avatar_url || "https://i.imgur.com/4M34hi2.png";
+
+    // 動態生成導覽列頭像
     userArea.innerHTML = `
         <div class="avatar-wrapper" id="avatarTrigger" style="cursor:pointer;">
-            <img src="${user.user_metadata.avatar_url}" style="width:42px; height:42px; border-radius:50%; border:2px solid var(--primary);">
+            <img src="${avatarUrl}" style="width:42px; height:42px; border-radius:50%; border:2px solid var(--primary);">
         </div>
     `;
 
-    // 重新為動態產生的頭像綁定點擊選單事件
+    // 綁定頭像點擊事件
     const avatarTrigger = document.getElementById("avatarTrigger");
     if (avatarTrigger && profileMenu) {
         avatarTrigger.addEventListener("click", (e) => {
@@ -85,21 +78,49 @@ async function renderLoggedIn(user) {
         });
     }
 
-    // 填寫選單與資產狀態
-    if (userName) userName.textContent = user.user_metadata.full_name || user.email;
-    if (userAvatar) userAvatar.src = user.user_metadata.avatar_url || "https://i.imgur.com/4M34hi2.png";
-    
-    // 預填遊戲內暱稱
-    if (playerNameInput && !playerNameInput.value) {
-        playerNameInput.value = user.user_metadata.full_name || "";
+    if (userAvatar) userAvatar.src = avatarUrl;
+
+    // 拿取最新 profile 資料
+    const profile = await ensureAndGetProfile(user);
+
+    // 🎯 抓取 display_name（優先度：display_name -> name -> Google full_name -> email 轉前綴 -> 預設玩家）
+    const finalDisplayName = profile?.display_name || 
+                             profile?.name || 
+                             user.user_metadata?.full_name || 
+                             user.email?.split("@")[0] || 
+                             "玩家";
+
+    // 🎯 抓取 player_tag（補齊 '#' 或預設 '#------'）
+    const rawTag = profile?.player_tag;
+    const tagVal = rawTag ? (rawTag.startsWith("#") ? rawTag : `${rawTag}`) : "尚未設定";
+
+    if (userName) userName.textContent = finalDisplayName;
+    if (userTag) userTag.textContent = tagVal;
+
+    // 綁定一鍵複製按鈕邏輯（安全 replaceChild 防止 null 報錯）
+    if (copyTagBtn && copyTagBtn.parentNode) {
+        const newCopyBtn = copyTagBtn.cloneNode(true);
+        copyTagBtn.parentNode.replaceChild(newCopyBtn, copyTagBtn);
+
+        newCopyBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (tagVal === "#------") {
+                showModal("複製失敗", "目前尚未設定玩家標籤。");
+                return;
+            }
+            navigator.clipboard.writeText(tagVal).then(() => {
+                showModal("複製成功", `已複製玩家標籤 ${tagVal}`);
+            }).catch(() => {
+                showModal("複製失敗", "瀏覽器不支援剪貼簿功能。");
+            });
+        });
     }
 
-    await ensureProfile(user);
-    await refreshCoins(user.email);
-    enableRealtime(user.email);
+    await refreshCoins(user.id);
+    enableRealtime(user.id);
 }
 
-// 未登入控制：將表單鎖定
+// 未登入控制
 function renderLoggedOut() {
     if (userArea) {
         userArea.innerHTML = `
@@ -110,109 +131,49 @@ function renderLoggedOut() {
         document.getElementById("loginBtn")?.addEventListener("click", async () => {
             await supabase.auth.signInWithOAuth({
                 provider: "google",
-                options: { redirectTo: window.location.origin + "/tournament.html" },
+                options: { redirectTo: window.location.origin + "/index.html" },
             });
         });
     }
-    toggleFormState(true, "請先登入 Google 帳號再進行報名");
 }
 
-// === 4. 呼叫 Deno 後端：安全檢查報名狀態 ===
-async function callCheckRegistration(user) {
-    try {
-        const response = await fetch(FUNCTION_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                action: "checkRegistration",
-                userId: user.id,
-                email: user.email
+// === 4. Profiles 資料同步及抓取 ===
+async function ensureAndGetProfile(user) {
+    // 查詢 profiles 表中的 display_name 與 player_tag
+    let { data: profile } = await supabase
+        .from("profiles")
+        .select("id, display_name, name, player_tag, faycoins")
+        .eq("id", user.id)
+        .maybeSingle();
+
+    // 若 profiles 無此 ID 則發送建立
+    if (!profile) {
+        const defaultName = user.user_metadata?.full_name || user.email?.split("@")[0] || "新玩家";
+        const { data: newProfile } = await supabase
+            .from("profiles")
+            .insert({ 
+                id: user.id, 
+                email: user.email, 
+                display_name: defaultName,
+                name: defaultName,
+                faycoins: 0 
             })
-        });
-        const resData = await response.json();
-
-        if (resData.success && resData.isRegistered) {
-            // 後端查到資料，將資料回填到欄位中
-            if (playerNameInput) playerNameInput.value = resData.registration.player_name;
-            if (playerTagInput) playerTagInput.value = resData.registration.player_tag;
-            if (contactInfoInput) contactInfoInput.value = resData.registration.contact_info;
-            
-            // 🔒 報名完成，執行全局表單鎖定
-            toggleFormState(true, "您已成功報名本屆賽事");
-        } else {
-            // 沒報名過，解鎖表單允許填寫
-            toggleFormState(false, "");
-        }
-    } catch (err) {
-        console.error("❌ 透過 Deno 檢查報名狀態失敗:", err);
+            .select()
+            .single();
+        
+        return newProfile;
     }
+
+    return profile;
 }
 
-// === 5. 表單提交控制 ===
-if (regForm) {
-    regForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
+async function refreshCoins(userId) {
+    const { data, error } = await supabase
+        .from("profiles")
+        .select("faycoins")
+        .eq("id", userId)
+        .maybeSingle();
 
-        if (!currentUser) {
-            showModal("權限錯誤", "請先完成 Google 帳號登入再執行報名。");
-            return;
-        }
-
-        // 防二度狂點，立刻先行停用按鈕
-        if (submitBtn) submitBtn.disabled = true;
-
-        try {
-            const response = await fetch(FUNCTION_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    action: "submitRegistration",
-                    userId: currentUser.id,
-                    email: currentUser.email,
-                    playerName: playerNameInput?.value,
-                    playerTag: playerTagInput?.value,
-                    contactInfo: contactInfoInput?.value
-                })
-            });
-
-            const resData = await response.json();
-
-            if (!response.ok || resData.error) {
-                showModal("報名失敗", resData.error || "伺服器發生未知錯誤。");
-                if (submitBtn) submitBtn.disabled = false;
-            } else {
-                showModal("報名成功", "資料已安全送達！請密切注意後續賽程更新。");
-                // 🔒 成功後，立刻將表單上鎖，防止再度修改
-                toggleFormState(true, "您已成功報名本屆賽事");
-            }
-        } catch (err) {
-            showModal("連線失敗", "無法連線到安全驗證伺服器，請稍後再試。");
-            if (submitBtn) submitBtn.disabled = false;
-        }
-    });
-}
-
-// 輔助：全面控制表單與按鈕的鎖定狀態
-function toggleFormState(disabled, buttonText) {
-    if (playerNameInput) playerNameInput.disabled = disabled;
-    if (playerTagInput) playerTagInput.disabled = disabled;
-    if (contactInfoInput) contactInfoInput.disabled = disabled;
-    if (submitBtn) {
-        submitBtn.disabled = disabled;
-        submitBtn.innerHTML = disabled ? buttonText : `<i class="fa-solid fa-paper-plane"></i> 提交報名資料`;
-    }
-}
-
-// === 6. Profiles 資料同步及基本功能 ===
-async function ensureProfile(user) {
-    const { data: existing } = await supabase.from("profiles").select("id").eq("id", user.id).maybeSingle();
-    if (!existing) {
-        await supabase.from("profiles").insert({ id: user.id, email: user.email, faycoins: 0 });
-    }
-}
-
-async function refreshCoins(email) {
-    const { data, error } = await supabase.from("profiles").select("faycoins").eq("email", email).maybeSingle();
     if (!error && userCoins) {
         const coins = data?.faycoins ?? 0;
         userCoins.textContent = coins;
@@ -220,16 +181,41 @@ async function refreshCoins(email) {
     }
 }
 
-function enableRealtime(email) {
+function enableRealtime(userId) {
     if (realtimeChannel) realtimeChannel.unsubscribe();
-    realtimeChannel = supabase.channel("profiles-update")
-        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles" }, (payload) => {
-            if (payload.new?.email?.toLowerCase() === email.toLowerCase()) {
-                const newCoins = payload.new.faycoins ?? 0;
+    
+    // 使用 user.id 精準監聽該使用者的變更事件
+    realtimeChannel = supabase.channel(`profile-update-${userId}`)
+        .on(
+            "postgres_changes", 
+            { 
+                event: "UPDATE", 
+                schema: "public", 
+                table: "profiles",
+                filter: `id=eq.${userId}` 
+            }, 
+            (payload) => {
+                const updated = payload.new;
+                if (!updated) return;
+
+                // 即時更新金幣
+                const newCoins = updated.faycoins ?? 0;
                 if (userCoins) userCoins.textContent = newCoins;
                 localStorage.setItem("faycoins", newCoins);
+                
+                // 即時更新 display_name
+                if (userName) {
+                    const newDisplayName = updated.display_name || updated.name;
+                    if (newDisplayName) userName.textContent = newDisplayName;
+                }
+
+                // 即時更新 player_tag
+                if (userTag) {
+                    const newTag = updated.player_tag;
+                    userTag.textContent = newTag ? (newTag.startsWith("#") ? newTag : `#${newTag}`) : "#------";
+                }
             }
-        }).subscribe();
+        ).subscribe();
 }
 
 if (logoutBtn) {
@@ -239,7 +225,7 @@ if (logoutBtn) {
     });
 }
 
-// 點擊空白隱藏選單
+// 點擊空白處隱藏選單
 window.addEventListener("click", () => profileMenu?.classList.add("hidden"));
 profileMenu?.addEventListener("click", (e) => e.stopPropagation());
 
