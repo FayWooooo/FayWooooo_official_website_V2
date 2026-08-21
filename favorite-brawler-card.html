@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>最愛的英雄名片生成器 - FayWooooo</title>
+    <link rel="icon" href="logo.ico">
+    <link rel="description" content="打造專屬於你的荒野亂鬥個人風格名片，支援自訂暱稱、玩家ID、特色字樣、英雄立繪選擇與微調，並可導出高畫質 PNG 名片。">
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+
+    <!-- 頂部膠囊導航 -->
+    <header class="topbar">
+        <div class="logo"><i class="fa-solid fa-star"></i> FayWooooo</div>
+        <nav class="navbar-center">
+            <a href="index.html">首頁</a>
+            <a href="shop.html">兌換</a>
+            <a href="articles.html">文章</a>
+            <a href="favorite-brawler-card.html" class="active">英雄名片</a>
+        </nav>
+        
+        <div id="userArea">
+            <button id="loginBtn" class="main-btn">
+                <i class="fa-brands fa-google"></i> 登入
+            </button>
+        </div>
+    </header>
+
+    <!-- 個人選單 -->
+    <div id="profileMenu" class="glass-card profile-menu hidden">
+        <div class="profile-header">
+            <img id="userAvatar" src="https://i.imgur.com/4M34hi2.png" alt="Avatar">
+            <div class="profile-text">
+                <h3 id="userName">載入中...</h3>
+                <p id="tagDisplay" class="user-tag-wrapper">
+                    <i class="fa-solid fa-id-card"></i> <span id="userIdDisplay">尚未設定</span>
+                    <button id="copyIdBtn" class="copy-tag-btn" title="複製 ID">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </p>
+                <p id="coinDisplay"><i class="fa-solid fa-coins"></i> Fay幣：<span id="userCoins">--</span></p>
+            </div>
+        </div>
+        <hr class="divider">
+        <div class="menu-actions">
+            <button class="menu-btn" onclick="location.href='setting.html'"><i class="fa-solid fa-id-card"></i> 個人資料設定</button>
+            <button id="logoutBtn" class="menu-btn logout"><i class="fa-solid fa-right-from-bracket"></i> 登出帳號</button>
+        </div>
+    </div>
+
+    <!-- 主內容區 -->
+    <main class="container container-wide">
+        <div class="hero">
+            <h1 class="title">英雄名片<span class="gradient-text">生成器</span></h1>
+            <p class="subtitle">打造專屬於你的荒野亂鬥個人風格名片</p>
+        </div>
+
+        <div class="generator-grid">
+            
+            <!-- 左側控制面板 -->
+            <div class="control-panel">
+                <div class="card">
+                    <h2><i class="fa-solid fa-sliders"></i> 卡片自訂選項</h2>
+
+                    <!-- 1. 玩家名稱與玩家ID -->
+                    <div class="ctrl-group">
+                        <label><i class="fa-solid fa-user"></i> 玩家名稱與玩家ID</label>
+                        <input type="text" id="inputName" placeholder="請輸入您的暱稱..." value="" class="input-mb-sm">
+                        <input type="text" id="inputId" placeholder="請輸入您的玩家ID..." value="" class="input-mb-none">
+                    </div>
+
+                    <!-- 2. 特色字樣設定 -->
+                    <div class="ctrl-group">
+                        <div class="ctrl-label-row">
+                            <label><i class="fa-solid fa-font"></i> 特色字樣設定</label>
+                            <span id="charCounter" class="hint-text text-xs-reset">1/5 行</span>
+                        </div>
+                        <textarea id="inputBio" rows="4" placeholder="請輸入您的特色字樣 (最多 5 行，每行上限 20 字)..." class="bio-textarea"></textarea>
+
+                        <div class="ctrl-row">
+                            <div>
+                                <label class="label-xs">顏色</label>
+                                <input type="color" id="inputBioColor" value="#ffffff" class="color-picker">
+                            </div>
+                            <div>
+                                <label class="label-xs">大小 (px)</label>
+                                <input type="number" id="inputBioSize" value="33" min="14" max="36">
+                            </div>
+                            <div>
+                                <label class="label-xs">粗細</label>
+                                <select id="inputBioWeight" class="select-styled">
+                                    <option value="400">正常</option>
+                                    <option value="600">中粗</option>
+                                    <option value="700" selected>粗體</option>
+                                    <option value="900">極粗</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. 英雄立繪選擇與微調 -->
+                    <div class="ctrl-group">
+                        <label><i class="fa-solid fa-mask"></i> 展示英雄立繪</label>
+                        <select id="inputBrawler" class="select-styled">
+                            <option value="https://cdn-assets-eu.frontify.com/s3/frontify-enterprise-files-eu/eyJwYXRoIjoic3VwZXJjZWxsXC9maWxlXC9Sc2l3OVRiVGR2Sktkdkd6MUpMNC5wbmcifQ:supercell:S7-M0m35d648vYwB6a9v3A1x9v3A1x9v3A1x9v3A1x9?width=800">尚未完成設計，請勿選擇</option>
+                            <option value="https://cdn-assets-eu.frontify.com/s3/frontify-enterprise-files-eu/eyJwYXRoIjoic3VwZXJjZWxsXC9maWxlXC9pSDFMNkZCYThKbnU4SDF6UzFHVi5wbmcifQ:supercell:S7-M0m35d648vYwB6a9v3A1x9v3A1x9v3A1x9v3A1x9?width=800">尚未完成設計，請勿選擇</option>
+                            <option value="https://cdn-assets-eu.frontify.com/s3/frontify-enterprise-files-eu/eyJwYXRoIjoic3VwZXJjZWxsXC9maWxlXC84SkI1TDFQdlE3c2pBRW5xVDVhTC5wbmcifQ:supercell:S7-M0m35d648vYwB6a9v3A1x9v3A1x9v3A1x9v3A1x9?width=800">尚未完成設計，請勿選擇</option>
+                            <option value="https://cdn-assets-eu.frontify.com/s3/frontify-enterprise-files-eu/eyJwYXRoIjoic3VwZXJjZWxsXC9maWxlXC93ZzNmUjJBNTVLdzlBWDlSUDVRQi5wbmcifQ:supercell:S7-M0m35d648vYwB6a9v3A1x9v3A1x9v3A1x9v3A1x9?width=800">尚未完成設計，請勿選擇</option>
+                        </select>
+
+                        <div class="ctrl-row ctrl-row-mt">
+                            <div>
+                                <label class="label-xs">縮放</label>
+                                <input type="range" id="inputModelScale" min="0.6" max="1.5" step="0.05" value="1.0">
+                            </div>
+                            <div>
+                                <label class="label-xs">左右 X</label>
+                                <input type="range" id="inputModelX" min="-100" max="100" step="5" value="0">
+                            </div>
+                            <div>
+                                <label class="label-xs">上下 Y</label>
+                                <input type="range" id="inputModelY" min="-100" max="100" step="5" value="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="downloadCardBtn" class="tm-submit-btn btn-mt">
+                        <i class="fa-solid fa-download"></i> 導出高畫質名片 (PNG)
+                    </button>
+                </div>
+            </div>
+
+            <!-- 右側即時預覽區 -->
+<div class="preview-wrapper">
+    <div class="card preview-card-box">
+        
+        <!-- 卡片 DOM Canvas (導出目標，移除 inline style，加入 class) -->
+        <div id="card-preview" class="card-preview-canvas card-preview-bg">
+            <div class="card-main-grid">
+                
+                <!-- 左區：個人資訊 -->
+                <div class="card-left-col">
+                    <div class="card-profile-header">
+                        <img id="cardAvatar" src="asset/頭像預留空間.png" class="card-avatar-img">
+                        <div>
+                            <!-- 移除 inline font-size，交由 CSS 控制 -->
+                            <h2 id="cardName" class="card-player-name">請輸入您的暱稱...</h2>
+                            <p id="cardId" class="card-player-id">請輸入您的玩家ID...</p>
+                        </div>
+                    </div>
+
+                    <!-- 特色字樣 -->
+                    <div id="cardBio" class="card-bio-text">
+請輸入您的特色字樣...
+                    </div>
+                </div>
+
+                <!-- 右區：英雄立繪 -->
+                <div class="card-right-col">
+                    <img id="cardModel" src="https://cdn-assets-eu.frontify.com/s3/frontify-enterprise-files-eu/eyJwYXRoIjoic3VwZXJjZWxsXC9maWxlXC9Sc2l3OVRiVGR2Sktkdkd6MUpMNC5wbmcifQ:supercell:S7-M0m35d648vYwB6a9v3A1x9v3A1x9v3A1x9v3A1x9?width=800" class="card-model-img">
+                </div>
+            </div>
+
+            <!-- 僅保留底圖右下角動態填入的日期欄位 -->
+            <div id="cardDate" class="card-date-overlay"></div>
+
+        </div>
+    </div>
+</div>
+
+        </div>
+    </main>
+<!-- 底部導航欄 (手機端專用) -->
+    <nav class="mobile-nav">
+        <a href="index.html"><i class="fa-solid fa-house"></i><span>首頁</span></a>
+        <a href="shop.html"><i class="fa-solid fa-gift"></i><span>兌換</span></a>
+        <a href="articles.html"><i class="fa-solid fa-book"></i><span>文章</span></a>
+        <a href="favorite-brawler-card.html" class="active"><i class="fa-solid fa-address-card"></i><span>英雄名片</span></a>
+    </nav>
+    <!-- 自訂 Modal 彈窗 -->
+    <div id="customModal" class="modal-backdrop hidden">
+        <div class="card modal-card-box">
+            <h2 id="modalTitle" class="modal-title-center"><i class="fa-solid fa-circle-info"></i> 提示</h2>
+            <p id="modalMessage" class="modal-msg">訊息內容</p>
+            <button id="modalCloseBtn" class="main-btn btn-full">確定</button>
+        </div>
+    </div>
+
+    <!-- 腳本引入 -->
+    <script type="module" src="js/brawler-card.js"></script>
+</body>
+</html>

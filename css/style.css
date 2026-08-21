@@ -931,4 +931,345 @@ input:focus, textarea:focus {
 }
 .copy-tag-btn:hover {
     background: rgba(255, 255, 255, 0.08);
+}/* ===============================================
+   🎴 英雄名片生成器專屬樣式 (Favorite Brawler Card)
+   =============================================== */
+
+/* 自訂名片字型 */
+@font-face {
+    font-family: 'CardFont', -apple-system, sans-serif;
+    src: url('../asset/card-font.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.container-wide {
+    max-width: 1400px;
+}
+
+.generator-grid {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+/* 控制面板樣式 */
+.control-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.ctrl-group {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.ctrl-group label {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ctrl-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ctrl-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.ctrl-row-mt {
+    margin-top: 6px;
+}
+
+.input-mb-sm {
+    margin-bottom: 6px !important;
+}
+
+.input-mb-none {
+    margin-bottom: 0 !important;
+}
+
+.bio-textarea {
+    resize: none;
+    margin-bottom: 8px !important;
+}
+
+.color-picker {
+    height: 38px;
+    padding: 2px 4px;
+    cursor: pointer;
+}
+
+.label-xs {
+    font-size: 0.75rem !important;
+}
+
+.text-xs-reset {
+    margin: 0 !important;
+    font-size: 0.75rem !important;
+}
+
+.select-styled {
+    background: rgba(0, 0, 0, 0.3);
+    color: #fff;
+    border: 1px solid var(--glass-border);
+    padding: 10px;
+    border-radius: var(--radius-md);
+    width: 100%;
+    font-family: 'CardFont', -apple-system, sans-serif;
+    font-size: 0.9rem;
+}
+
+.btn-mt {
+    margin-top: 10px !important;
+}
+
+.btn-full {
+    width: 100% !important;
+}
+
+/* 預覽區外框與畫布外容器 */
+.preview-wrapper {
+    position: sticky;
+    top: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.preview-card-box {
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* ===============================================
+   🎴 名片預覽區畫布基礎樣式 (電腦端 960x540)
+   =============================================== */
+.card-preview-canvas {
+    width: 960px;
+    height: 540px;
+    background: #09090b;
+    border: 1px solid var(--glass-border-strong);
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 40px;
+    user-select: none;
+}
+
+.card-preview-bg {
+    background-image: url('../asset/製圖工具浮水印.png');
+    background-size: cover;
+    background-position: center;
+}
+
+.card-main-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    height: 100%;
+    z-index: 2;
+}
+
+.card-left-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 20px;
+}
+
+.card-profile-header {
+    font-family: 'CardFont', -apple-system, sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.card-avatar-img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+}
+
+/* 電腦端預設文字尺寸 */
+.card-player-name {
+    font-family: 'CardFont', -apple-system, sans-serif;
+    font-size: 52px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.card-player-id {
+    font-family: 'CardFont', -apple-system, sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--secondary);
+    opacity: 0.9;
+    margin: 4px 0 0 0;
+}
+
+.card-bio-text {
+    font-family: 'CardFont', -apple-system, sans-serif;
+    text-align: left;
+    white-space: pre-line;
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.5;
+    margin-top: 10px;
+}
+
+.card-right-col {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.card-model-img {
+    max-height: 110%;
+    object-fit: contain;
+    filter: drop-shadow(0 15px 25px rgba(0,0,0,0.7));
+    transition: transform 0.05s ease-out;
+}
+
+.card-date-overlay {
+    position: absolute;
+    right: 40px;
+    bottom: 37px;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 40px;
+    font-family: 'CardFont', -apple-system, sans-serif;
+    z-index: 2;
+}
+
+/* Modal 彈窗樣式 */
+.modal-card-box {
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.modal-title-center {
+    justify-content: center !important;
+}
+
+.modal-msg {
+    color: var(--text-dim);
+    margin-bottom: 20px;
+}
+
+/* ===============================================
+   💻 平板端微調 (1200px 以下)
+   =============================================== */
+@media (max-width: 1200px) {
+    .generator-grid {
+        grid-template-columns: 1fr;
+    }
+    .preview-wrapper {
+        position: static;
+    }
+}
+
+/* ===============================================
+   📱 英雄名片生成器 - 手機端微調 (Mobile RWD)
+   =============================================== */
+@media (max-width: 900px) {
+    body {
+        padding-bottom: 90px;
+    }
+
+    .container-wide {
+        padding: 12px;
+    }
+
+    .generator-grid {
+        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column-reverse;
+        gap: 16px;
+    }
+
+    .preview-card-box {
+        padding: 8px;
+        border-radius: var(--radius-md);
+    }
+
+    /* 手機端 Canvas 自動彈性適應 */
+    .card-preview-canvas {
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 16 / 9;
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    .card-main-grid {
+        grid-template-columns: 1fr 140px;
+    }
+
+    /* 手機端文字與元素尺寸縮小防跑版 */
+    .card-avatar-img {
+        width: 48px;
+        height: 48px;
+    }
+
+    .card-player-name {
+        font-size: 20px;
+    }
+
+    .card-player-id {
+        font-size: 12px;
+        margin-top: 2px;
+    }
+
+    .card-bio-text {
+        font-size: 13px;
+        margin-top: 6px;
+        line-height: 1.3;
+    }
+
+    .card-date-overlay {
+        right: 14px;
+        bottom: 12px;
+        font-size: 14px;
+    }
+
+    .ctrl-row {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+
+    .tm-submit-btn {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
 }
